@@ -64,7 +64,7 @@ def main():
 
     venv = VecNormalize(venv=venv, ob=False)
 
-    test_venv = ProcgenEnv(num_envs=num_envs, env_name=args.env_name, num_levels=num_levels, start_level=args.start_level, distribution_mode=args.distribution_mode)
+    test_venv = ProcgenEnv(num_envs=num_envs, env_name=args.env_name, num_levels=0, start_level=args.start_level, distribution_mode=args.distribution_mode)
     test_venv = VecExtractDictObs(test_venv, "rgb")
 
     test_venv = VecMonitor(
@@ -77,6 +77,7 @@ def main():
     setup_mpi_gpus()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True #pylint: disable=E1101
+    config.gpu_options.per_process_gpu_memory_fraction = 0.9
     sess = tf.Session(config=config)
     sess.__enter__()
 
