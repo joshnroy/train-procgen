@@ -25,7 +25,7 @@ def main():
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 50_000_000
+    timesteps_per_proc = 200_000_000
     use_vf_clipping = True
 
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
@@ -64,6 +64,15 @@ def main():
 
     venv = VecNormalize(venv=venv, ob=False)
 
+    test_venv = ProcgenEnv(num_envs=num_envs, env_name=args.env_name, num_levels=num_levels, start_level=args.start_level, distribution_mode=args.distribution_mode)
+    test_venv = VecExtractDictObs(test_venv, "rgb")
+
+    test_venv = VecMonitor(
+        venv=test_venv, filename=None, keep_buf=100,
+    )
+
+    test_venv = VecNormalize(venv=test_venv, ob=False)
+
     logger.info("creating tf session")
     setup_mpi_gpus()
     config = tf.ConfigProto()
@@ -95,6 +104,7 @@ def main():
         init_fn=None,
         vf_coef=0.5,
         max_grad_norm=0.5,
+        eval_env=test_venv,
     )
 
 if __name__ == '__main__':
