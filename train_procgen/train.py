@@ -13,8 +13,7 @@ from baselines import logger
 from mpi4py import MPI
 import argparse
 
-LOG_DIR = '/tmp/procgen_my'
-# LOG_DIR = '/tmp/procgen_base'
+LOG_DIR = '/tmp/procgen_multiplegenerator'
 
 def main():
     num_envs = 64
