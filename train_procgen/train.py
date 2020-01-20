@@ -1,6 +1,6 @@
 import tensorflow as tf
 from baselines.adversarial_ppo2 import ppo2
-from baselines.common.models import build_impala_cnn
+from baselines.adversarial_ppo2.models import build_impala_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
