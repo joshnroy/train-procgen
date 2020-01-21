@@ -30,7 +30,7 @@ def main():
     use_vf_clipping = True
 
     disc_coeff = float(os.environ["SGE_TASK_ID"]) / 100.
-    LOG_DIR = '/tmp/procgen_jumper_easy_disc_coeff_' + str(disc_coeff)
+    LOG_DIR = '/home/jroy1/procgen_training/procgen_jumper_easy_disc_coeff_' + str(disc_coeff)
 
     test_worker_interval = 0
 
