@@ -15,9 +15,10 @@ datas = []
 for f in tqdm(glob("/home/jroy1/procgen_training/*/progress.csv")):
     if os.stat(f).st_size == 0:
         continue
+    # data = pd.read_csv(f)[["fps", "eprewmean", "eval_eprewmean", "misc/total_timesteps"]]
     data = pd.read_csv(f)[["eprewmean", "eval_eprewmean", "misc/total_timesteps"]]
     data["misc/total_timesteps"] /= 1e6
     data = data.melt("misc/total_timesteps")
-    sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, legend=False)
+    sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, legend=False, alpha=0.75)
     # sns.lineplot(x="misc/total_timesteps", y="eval_eprewmean", data=data, palette=test_palette)
 plt.show()
