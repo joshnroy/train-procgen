@@ -1,6 +1,6 @@
 import tensorflow as tf
 from baselines.adversarial_ppo2 import ppo2
-from baselines.adversarial_ppo2.models import build_impala_cnn
+from baselines.adversarial_ppo2.models import build_impala_cnn, nature_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
@@ -34,6 +34,7 @@ def main():
     parser.add_argument('--num_levels', type=int, default=0)
     parser.add_argument('--start_level', type=int, default=0)
     parser.add_argument('--test_worker_interval', type=int, default=0)
+    parser.add_argument('--disc_coeff', type=int, default=1.0)
 
     args = parser.parse_args()
 
@@ -83,7 +84,8 @@ def main():
     sess = tf.Session(config=config)
     sess.__enter__()
 
-    conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+    # conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+    conv_fn = lambda x: nature_cnn(x)
 
     logger.info("training")
     ppo2.learn(
@@ -108,6 +110,7 @@ def main():
         vf_coef=0.5,
         max_grad_norm=0.5,
         eval_env=test_venv,
+        disc_coeff=args.disc_coeff,
     )
 
 if __name__ == '__main__':
