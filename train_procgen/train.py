@@ -29,8 +29,8 @@ def main():
     timesteps_per_proc = 25_000_000
     use_vf_clipping = True
 
-    disc_coeff = float(os.environ["SGE_TASK_ID"]) / 100.
-    LOG_DIR = '/home/jroy1/procgen_training/procgen_jumper_easy_disc_coeff_' + str(disc_coeff)
+    disc_coeff = ((float(os.environ["SGE_TASK_ID"]) - 1.) * 5.) + 2.
+    LOG_DIR = '/home/jroy1/procgen_training_firstlayer_long_bigfish/procgen_bigfish_easy_disc_coeff_' + str(disc_coeff)
 
     test_worker_interval = 0
 
@@ -50,33 +50,26 @@ def main():
     logger.configure(dir=LOG_DIR, format_strs=format_strs)
 
     dist_mode = "easy"
-    env_name = "jumper"
+    env_name = "bigfish"
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=200, start_level=0, distribution_mode=dist_mode)
-    logger.info("1")
     venv = VecExtractDictObs(venv, "rgb")
-    logger.info("2")
 
     venv = VecMonitor(
         venv=venv, filename=None, keep_buf=100,
     )
-    logger.info("3")
 
     venv = VecNormalize(venv=venv, ob=False)
-    logger.info("4")
 
     test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=0, start_level=1000, distribution_mode=dist_mode)
     test_venv = VecExtractDictObs(test_venv, "rgb")
-    logger.info("5")
 
     test_venv = VecMonitor(
         venv=test_venv, filename=None, keep_buf=100,
     )
-    logger.info("6")
 
     test_venv = VecNormalize(venv=test_venv, ob=False)
-    logger.info("7")
 
     logger.info("creating tf session")
     setup_mpi_gpus()
