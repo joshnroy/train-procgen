@@ -29,8 +29,9 @@ def main():
     timesteps_per_proc = 25_000_000
     use_vf_clipping = True
 
-    disc_coeff = ((float(os.environ["SGE_TASK_ID"]) - 1.) * 5.) + 2.
-    LOG_DIR = '/home/jroy1/procgen_training_firstlayer_long_bigfish/procgen_bigfish_easy_disc_coeff_' + str(disc_coeff)
+    # disc_coeff = ((float(os.environ["SGE_TASK_ID"]) - 1.) * 5.) + 2.
+    disc_coeff = 0.01
+    LOG_DIR = '/home/josh/memes/procgen_jumper_easy_disc_coeff_' + str(disc_coeff)
 
     test_worker_interval = 0
 
@@ -50,7 +51,7 @@ def main():
     logger.configure(dir=LOG_DIR, format_strs=format_strs)
 
     dist_mode = "easy"
-    env_name = "bigfish"
+    env_name = "jumper"
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=200, start_level=0, distribution_mode=dist_mode)
