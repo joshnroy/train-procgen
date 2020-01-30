@@ -30,8 +30,8 @@ def main():
     use_vf_clipping = True
 
     # disc_coeff = ((float(os.environ["SGE_TASK_ID"]) - 1.) * 5.) + 2.
-    disc_coeff = 0.01
-    LOG_DIR = '/home/josh/memes/procgen_jumper_easy_disc_coeff_' + str(disc_coeff)
+    disc_coeff = 0.1
+    LOG_DIR = '/home/josh/memes/jumper11_higher_easy_disc_coeff_' + str(disc_coeff)
 
     test_worker_interval = 0
 
