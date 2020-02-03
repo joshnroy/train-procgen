@@ -33,10 +33,10 @@ def main():
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 25_000_000
+    timesteps_per_proc = 1_000_000
     use_vf_clipping = True
 
-    num_levels = 200
+    num_levels = 10
     disc_coeff = 0.0
     LOG_DIR = '/home/josh/visual-cartpole/visual_cartpole_disc_coeff_' + str(disc_coeff) + "_num_levels_" + str(num_levels)
 
@@ -124,6 +124,7 @@ def main():
         max_grad_norm=0.5,
         eval_env=test_venv,
         disc_coeff=disc_coeff,
+        num_levels=num_levels,
     )
 
 if __name__ == '__main__':
