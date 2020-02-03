@@ -22,15 +22,17 @@ def main():
     ent_coef = .01
     gamma = .999
     lam = .95
-    nsteps = 256
+    # nsteps = 256
+    nsteps = (int(os.environ["SGE_TASK_ID"]) * 4) + 8
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
     timesteps_per_proc = 25_000_000
     use_vf_clipping = True
 
-    disc_coeff = ((float(os.environ["SGE_TASK_ID"]) - 1.) * 5.) + 2.
-    LOG_DIR = '/home/jroy1/procgen_training_firstlayer_long_bigfish/procgen_bigfish_easy_disc_coeff_' + str(disc_coeff)
+    # disc_coeff = (float(os.environ["SGE_TASK_ID"]) / 50.)
+    disc_coeff = 0.1
+    LOG_DIR = '/home/jroy1/jumper_easy_batchsize/rand_0.9_procgen_jumper_easy_batchsize' + str(nsteps * 4)
 
     test_worker_interval = 0
 
@@ -43,17 +45,18 @@ def main():
         is_test_worker = comm.Get_rank() % test_worker_interval == (test_worker_interval - 1)
 
     mpi_rank_weight = 0 if is_test_worker else 1
-    num_levels = 0 if is_test_worker else 200
 
     log_comm = comm.Split(1 if is_test_worker else 0, 0)
     format_strs = ['csv', 'stdout', 'tensorboard'] if log_comm.Get_rank() == 0 else []
     logger.configure(dir=LOG_DIR, format_strs=format_strs)
 
     dist_mode = "easy"
-    env_name = "bigfish"
+    env_name = "jumper"
+
+    num_levels = 200
 
     logger.info("creating environment")
-    venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=200, start_level=0, distribution_mode=dist_mode)
+    venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
     venv = VecExtractDictObs(venv, "rgb")
 
     venv = VecMonitor(
@@ -62,7 +65,7 @@ def main():
 
     venv = VecNormalize(venv=venv, ob=False)
 
-    test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=0, start_level=1000, distribution_mode=dist_mode)
+    test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=0, start_level=10000, distribution_mode=dist_mode)
     test_venv = VecExtractDictObs(test_venv, "rgb")
 
     test_venv = VecMonitor(
