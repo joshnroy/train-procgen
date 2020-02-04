@@ -29,16 +29,21 @@ def main():
     ent_coef = .01
     gamma = .999
     lam = .95
-    nsteps = 256
+    # nsteps = (128 // 8)
+    nsteps = (2048 // 8)
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
     timesteps_per_proc = 1_000_000
     use_vf_clipping = True
 
-    num_levels = 10
-    disc_coeff = 0.0
-    LOG_DIR = '/home/josh/visual-cartpole/visual_cartpole_disc_coeff_' + str(disc_coeff) + "_num_levels_" + str(num_levels)
+    num_levels = 30
+    # disc_coeff = None
+    disc_coeff = 1.
+    if disc_coeff is None:
+        LOG_DIR = "/home/josh/visual-cartpole/visual_cartpole_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+    else:
+        LOG_DIR = "/home/josh/visual-cartpole/visual_cartpole_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
 
     test_worker_interval = 0
 
@@ -123,8 +128,8 @@ def main():
         vf_coef=0.5,
         max_grad_norm=0.5,
         eval_env=test_venv,
-        disc_coeff=disc_coeff,
         num_levels=num_levels,
+        disc_coeff=disc_coeff,
     )
 
 if __name__ == '__main__':
