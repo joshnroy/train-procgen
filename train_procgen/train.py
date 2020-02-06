@@ -43,7 +43,7 @@ def main():
     if disc_coeff is None:
         LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_1_visual_again"
+        LOG_DIR = "/home/josh/jumper_easy_attention/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention"
 
     test_worker_interval = 0
 
