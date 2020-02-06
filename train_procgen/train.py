@@ -39,7 +39,7 @@ def main():
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 0.
+    disc_coeff = 1.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
