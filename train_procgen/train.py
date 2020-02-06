@@ -63,7 +63,6 @@ def main():
 
     dist_mode = "easy"
     env_name = "jumper"
-
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
     venv = VecExtractDictObs(venv, "rgb")
@@ -128,6 +127,7 @@ def main():
         eval_env=test_venv,
         num_levels=num_levels,
         disc_coeff=disc_coeff,
+        num_levels=num_levels,
     )
 
 if __name__ == '__main__':
