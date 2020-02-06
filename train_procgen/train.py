@@ -39,11 +39,11 @@ def main():
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 1.
+    disc_coeff = 10000.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/jumper_easy_attention/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention"
+        LOG_DIR = "/home/josh/jumper_easy_attention/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention_up"
 
     test_worker_interval = 0
 
