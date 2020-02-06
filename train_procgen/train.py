@@ -41,9 +41,9 @@ def main():
     # disc_coeff = None
     disc_coeff = 0.
     if disc_coeff is None:
-        LOG_DIR = "/home/josh/climber/climber_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/climber/climber_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_feature_1_sobel_batchnorm"
+        LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_1_visual_again"
 
     test_worker_interval = 0
 
@@ -62,7 +62,7 @@ def main():
     logger.configure(dir=LOG_DIR, format_strs=format_strs)
 
     dist_mode = "easy"
-    env_name = "climber"
+    env_name = "jumper"
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
