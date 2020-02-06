@@ -30,7 +30,7 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = (128 // 8)
-    nsteps = (1024 // 8)
+    nsteps = (2048 // 8)
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
@@ -41,9 +41,9 @@ def main():
     # disc_coeff = None
     disc_coeff = 0.
     if disc_coeff is None:
-        LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/climber/climber_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/climber/climber_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_feature_1_sobel_batchnorm"
 
     test_worker_interval = 0
 
@@ -62,7 +62,7 @@ def main():
     logger.configure(dir=LOG_DIR, format_strs=format_strs)
 
     dist_mode = "easy"
-    env_name = "jumper"
+    env_name = "climber"
 
     logger.info("creating environment")
     venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
