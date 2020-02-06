@@ -14,6 +14,13 @@ from mpi4py import MPI
 import argparse
 import os
 import sys
+import gym
+import gym_cartpole_visual
+import numpy as np
+
+from pyvirtualdisplay import Display
+display = Display(visible=0, size=(100, 100), backend="xvfb")
+display.start()
 
 
 def main():
@@ -23,16 +30,16 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = 256
-    nsteps = (int(os.environ["SGE_TASK_ID"]) * 4) + 8
+    nsteps = 128 // 4
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
     timesteps_per_proc = 25_000_000
     use_vf_clipping = True
 
-    # disc_coeff = (float(os.environ["SGE_TASK_ID"]) / 50.)
-    disc_coeff = 0.1
-    LOG_DIR = '/home/jroy1/jumper_easy_batchsize/rand_0.9_procgen_jumper_easy_batchsize' + str(nsteps * 4)
+    num_levels = int(os.environ["SGE_TASK_ID"]) * 5
+    disc_coeff = 0.0
+    LOG_DIR = '/home/jroy1/visual-cartpole/visual_cartpole_disc_coeff_' + str(disc_coeff) + "_num_levels_" + str(num_levels)
 
     test_worker_interval = 0
 
@@ -52,25 +59,33 @@ def main():
 
     dist_mode = "easy"
     env_name = "jumper"
-
-    num_levels = 200
-
     logger.info("creating environment")
-    venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
-    venv = VecExtractDictObs(venv, "rgb")
+    # venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
+    # venv = VecExtractDictObs(venv, "rgb")
+
+    venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_levels)
+    venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
+    venv.action_space = gym.spaces.Discrete(2)
 
     venv = VecMonitor(
         venv=venv, filename=None, keep_buf=100,
     )
 
     venv = VecNormalize(venv=venv, ob=False)
+    # print(venv.action_space)
+    # sys.exit()
 
-    test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=0, start_level=10000, distribution_mode=dist_mode)
-    test_venv = VecExtractDictObs(test_venv, "rgb")
+    # test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=0, start_level=1000, distribution_mode=dist_mode)
+    # test_venv = VecExtractDictObs(test_venv, "rgb")
+
+    test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=0)
+    test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
+    test_venv.action_space = gym.spaces.Discrete(2)
 
     test_venv = VecMonitor(
         venv=test_venv, filename=None, keep_buf=100,
     )
+    # test_venv = VecExtractDictObs(test_venv, "rgb")
 
     test_venv = VecNormalize(venv=test_venv, ob=False)
 
@@ -109,6 +124,7 @@ def main():
         max_grad_norm=0.5,
         eval_env=test_venv,
         disc_coeff=disc_coeff,
+        num_levels=num_levels,
     )
 
 if __name__ == '__main__':

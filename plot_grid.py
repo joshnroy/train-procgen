@@ -47,10 +47,10 @@ def plot_discriminator_loss(inputs, AVG_LEN, ax):
 
 
 def main_sweep():
-    AVG_LEN = 500
+    AVG_LEN = 1
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")):
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/jumper_easy_batchsize/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/visual-cartpole/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -74,13 +74,14 @@ def main_sweep():
             continue
 
 def main_trials():
-    AVG_LEN = 10
+    AVG_LEN = 1
     things = [str(0.01), str(0.02), str(0.03)]
     for thing in things:
         data = pd.DataFrame()
         for f in tqdm(glob("/home/jroy1/jumper_easy_gan_manytrials/*" + thing + "*/progress.csv")):
             if os.stat(f).st_size == 0:
                 continue
+            print(f)
             try:
                 data_f = pd.read_csv(f)
                 data = data.append(data_f)
