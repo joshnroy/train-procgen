@@ -30,7 +30,7 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = (128 // 8)
-    nsteps = (1024 // 8)
+    nsteps = (256 // 8)
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
