@@ -30,7 +30,7 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = (128 // 8)
-    nsteps = (2048 // 8)
+    nsteps = (1024 // 8)
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
@@ -39,11 +39,11 @@ def main():
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 10000.
+    disc_coeff = 0.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/jumper/jumper_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/jumper_easy_attention/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention_up"
+        LOG_DIR = "/home/josh/jumper_easy_attention/jumper_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention"
 
     test_worker_interval = 0
 
@@ -127,7 +127,6 @@ def main():
         eval_env=test_venv,
         num_levels=num_levels,
         disc_coeff=disc_coeff,
-        num_levels=num_levels,
     )
 
 if __name__ == '__main__':
