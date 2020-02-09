@@ -37,20 +37,22 @@ def plot_discriminator_accuracy(inputs, AVG_LEN, ax):
 
 
 def plot_discriminator_loss(inputs, AVG_LEN, ax):
-    data = inputs[["loss/discriminator_loss", "misc/total_timesteps"]]
+    data = inputs[["loss/discriminator_loss", "loss/pd_loss", "misc/total_timesteps"]]
     if AVG_LEN > 1:
         data["loss/discriminator_loss"] = data["loss/discriminator_loss"].rolling(AVG_LEN).mean()
+        data["loss/pd_loss"] = data["loss/pd_loss"].rolling(AVG_LEN).mean()
     data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-10., upper=10.)
+    data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Discriminator Loss")
 
 
 def main_sweep():
-    AVG_LEN = 1
+    AVG_LEN = 10
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")):
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/visual-cartpole/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/jumper_easy_attention/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
