@@ -30,18 +30,18 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = (128 // 8)
-    nsteps = (256 // 8)
     nminibatches = 8
+    nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 10_000_000
+    timesteps_per_proc = 100_000_000
     use_vf_clipping = True
     dist_mode = "easy"
     env_name = "visual-cartpole"
 
-    num_levels = 2
+    num_levels = 5
     # disc_coeff = None
-    disc_coeff = 10.
+    disc_coeff = 0.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
