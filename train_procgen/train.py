@@ -34,14 +34,14 @@ def main():
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 10_000_000
+    timesteps_per_proc = 25_000_000
     use_vf_clipping = True
     dist_mode = "easy"
-    env_name = "visual-cartpole"
+    env_name = "dodgeball"
 
-    num_levels = 2
+    num_levels = 200
     # disc_coeff = None
-    disc_coeff = 10.
+    disc_coeff = 1.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
