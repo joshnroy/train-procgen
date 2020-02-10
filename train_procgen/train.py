@@ -1,6 +1,6 @@
 import tensorflow as tf
 from baselines.adversarial_ppo2 import ppo2
-from baselines.adversarial_ppo2.models import build_impala_cnn, nature_cnn
+from baselines.adversarial_ppo2.models import build_impala_cnn, nature_cnn, build_darla_vae
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
@@ -30,7 +30,7 @@ def main():
     gamma = .999
     lam = .95
     # nsteps = (128 // 8)
-    nsteps = (2048 // 8)
+    nsteps = (128 // 8)
     nminibatches = 8
     ppo_epochs = 3
     clip_range = .2
@@ -40,13 +40,13 @@ def main():
     env_name = "visual-cartpole"
 
 
-    num_levels = int(os.environ["SGE_TASK_ID"])
+    num_levels = 100
     # disc_coeff = None
     disc_coeff = 0.
     if disc_coeff is None:
-        LOG_DIR = "/home/jroy1/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/jroy1/" + env_name + "_easy_attention/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/" + env_name + "_easy_vae/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
 
     test_worker_interval = 0
 
@@ -104,8 +104,10 @@ def main():
     sess = tf.Session(config=config)
     sess.__enter__()
 
-    conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
+    # conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
     # conv_fn = lambda x: nature_cnn(x)
+
+    conv_fn = lambda x: build_darla_vae(x, emb_size=256)
 
     logger.info("training")
     ppo2.learn(
