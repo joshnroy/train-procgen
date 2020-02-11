@@ -31,21 +31,21 @@ def main():
     lam = .95
     # nsteps = (128 // 8)
     nminibatches = 8
-    nsteps = (2048 // nminibatches)
+    nsteps = (512 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
     timesteps_per_proc = 100_000_000
     use_vf_clipping = True
     dist_mode = "easy"
-    env_name = "visual-cartpole"
+    env_name = "jumper"
 
-    num_levels = 5
+    num_levels = 200
     # disc_coeff = None
-    disc_coeff = 0.
+    disc_coeff = 1.
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/" + env_name + "_easy_attention/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "attention"
+        LOG_DIR = "/home/josh/" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
 
     test_worker_interval = 0
 
