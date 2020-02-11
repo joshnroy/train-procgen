@@ -52,7 +52,7 @@ def main_sweep():
     AVG_LEN = 10
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")):
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/jumper_easy_attention/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/visual-cartpole_easy_attention/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
