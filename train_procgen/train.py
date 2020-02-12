@@ -31,7 +31,7 @@ def main():
     lam = .95
     # nsteps = (128 // 8)
     nminibatches = 8
-    nsteps = (512 // nminibatches)
+    nsteps = (128 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
     timesteps_per_proc = 25_000_000
@@ -42,11 +42,11 @@ def main():
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 0.
+    disc_coeff = 1.0
     if disc_coeff is None:
-        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/jroy1/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_kshot"
+        LOG_DIR = "/home/jroy1/restart_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "meme"
 
     test_worker_interval = 0
 

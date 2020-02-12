@@ -9,16 +9,19 @@ import sys
 
 sns.set(style="darkgrid")
 
+CLIP_NUM = 20.
+
 
 def plot_rewards(inputs, AVG_LEN, ax, ax2):
-    data = inputs[["eprewmean", "eval_eprewmean", "misc/total_timesteps"]]
+    data = inputs[["eprewmean", "eval_eprewmean", "zeroshot_eval_eprewmean", "misc/total_timesteps"]]
     if AVG_LEN > 1:
         data["eprewmean"] = data["eprewmean"].rolling(AVG_LEN).mean()
         data["eval_eprewmean"] = data["eval_eprewmean"].rolling(AVG_LEN).mean()
-    data["eprewmean"] = data["eprewmean"].clip(lower=-10., upper=10.)
-    data["eval_eprewmean"] = data["eval_eprewmean"].clip(lower=-10., upper=10.)
+        data["zeroshot_eval_eprewmean"] = data["zeroshot_eval_eprewmean"].rolling(AVG_LEN).mean()
+    data["eprewmean"] = data["eprewmean"].clip(lower=-CLIP_NUM, upper=CLIP_NUM)
+    data["zeroshot_eval_eprewmean"] = data["zeroshot_eval_eprewmean"].clip(lower=-CLIP_NUM, upper=CLIP_NUM)
     newseries = data["eval_eprewmean"] / data["eprewmean"]
-    newseries = newseries.clip(lower=-10., upper=10.)
+    newseries = newseries.clip(lower=-CLIP_NUM, upper=CLIP_NUM)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Rewards")
@@ -30,27 +33,29 @@ def plot_discriminator_accuracy(inputs, AVG_LEN, ax):
     data = inputs[["loss/discriminator_accuracy", "misc/total_timesteps"]]
     if AVG_LEN > 1:
         data["loss/discriminator_accuracy"] = data["loss/discriminator_accuracy"].rolling(AVG_LEN).mean()
-    data["loss/discriminator_accuracy"] = data["loss/discriminator_accuracy"].clip(lower=-10., upper=10.)
+    data["loss/discriminator_accuracy"] = data["loss/discriminator_accuracy"].clip(lower=-CLIP_NUM, upper=CLIP_NUM)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Discriminator Accuracy")
 
 
 def plot_discriminator_loss(inputs, AVG_LEN, ax):
-    data = inputs[["loss/discriminator_loss", "misc/total_timesteps"]]
+    data = inputs[["loss/discriminator_loss", "loss/pd_loss", "misc/total_timesteps"]]
     if AVG_LEN > 1:
         data["loss/discriminator_loss"] = data["loss/discriminator_loss"].rolling(AVG_LEN).mean()
-    data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-10., upper=10.)
+        data["loss/pd_loss"] = data["loss/pd_loss"].rolling(AVG_LEN).mean()
+    data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-CLIP_NUM, upper=CLIP_NUM)
+    data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-CLIP_NUM, upper=CLIP_NUM)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Discriminator Loss")
 
 
 def main_sweep():
-    AVG_LEN = 1
+    AVG_LEN = 100
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")):
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/visual-cartpole/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/restart*/*alternating*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -59,7 +64,7 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4)
+            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(20, 20))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
