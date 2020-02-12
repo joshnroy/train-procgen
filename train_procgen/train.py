@@ -17,6 +17,7 @@ import sys
 import gym
 import gym_cartpole_visual
 import numpy as np
+import random
 
 from pyvirtualdisplay import Display
 display = Display(visible=0, size=(100, 100), backend="xvfb")
@@ -40,13 +41,15 @@ def main():
     env_name = "jumper"
     num_frames = 1
 
+    start_level = random.SystemRandom().randint(0, 2 ** 31 - 1)
+
     num_levels = 200
     # disc_coeff = None
     disc_coeff = 1.0
     if disc_coeff is None:
-        LOG_DIR = "/home/jroy1/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/jroy1/restart_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "meme"
+        LOG_DIR = "/home/josh/kshot_1_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "meme3"
 
     test_worker_interval = 0
 
