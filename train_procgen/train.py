@@ -46,7 +46,7 @@ def main():
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/better3_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "latent_easy_new"
+        LOG_DIR = "/home/josh/w_disc_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "latent_easy_new"
 
     test_worker_interval = 0
 
