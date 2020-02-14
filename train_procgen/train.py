@@ -34,19 +34,19 @@ def main():
     nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 1_000_000
+    timesteps_per_proc = 25_000_000
     use_vf_clipping = True
     dist_mode = "easy"
-    env_name = "visual-cartpole"
+    env_name = "maze"
     num_frames = 1
 
-    num_levels = 1
+    num_levels = 200
     # disc_coeff = None
     disc_coeff = 1.0
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/josh/w_disc_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
+        LOG_DIR = "/home/josh/w_disc_again_" + env_name + "_easy/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
 
     test_worker_interval = 0
 
@@ -85,11 +85,11 @@ def main():
     venv = VecNormalize(venv=venv, ob=False)
 
     if env_name == "visual-cartpole":
-        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=1, start_level=1543)
+        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=100, start_level=1543)
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=100, start_level=1000, distribution_mode=dist_mode)
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=10, start_level=1543, distribution_mode=dist_mode)
         test_venv = VecExtractDictObs(test_venv, "rgb")
 
     if num_frames > 1:
