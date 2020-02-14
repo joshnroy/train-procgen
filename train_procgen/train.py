@@ -37,7 +37,7 @@ def main():
     timesteps_per_proc = 25_000_000
     use_vf_clipping = True
     dist_mode = "easy"
-    env_name = "maze"
+    env_name = "climber"
     num_frames = 1
 
     num_levels = 200
