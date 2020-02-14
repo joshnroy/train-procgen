@@ -61,7 +61,7 @@ def main_sweep():
     AVG_LEN = 10
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")): 950011095931 950011095931 950011095931 950011095931
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/better*/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/two_domain_adaptation_*/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
