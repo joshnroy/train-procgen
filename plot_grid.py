@@ -37,20 +37,31 @@ def plot_discriminator_accuracy(inputs, AVG_LEN, ax):
 
 
 def plot_discriminator_loss(inputs, AVG_LEN, ax):
-    data = inputs[["loss/discriminator_loss", "misc/total_timesteps"]]
+    data = inputs[["loss/discriminator_loss", "loss/pd_loss", "misc/total_timesteps"]]
     if AVG_LEN > 1:
         data["loss/discriminator_loss"] = data["loss/discriminator_loss"].rolling(AVG_LEN).mean()
+        data["loss/pd_loss"] = data["loss/pd_loss"].rolling(AVG_LEN).mean()
     data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-10., upper=10.)
+    data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Discriminator Loss")
 
+def plot_value_loss(inputs, AVG_LEN, ax):
+    data = inputs[["loss/value_loss", "misc/total_timesteps"]]
+    if AVG_LEN > 1:
+        data["loss/value_loss"] = data["loss/value_loss"].rolling(AVG_LEN).mean()
+    data["loss/value_loss"] = data["loss/value_loss"].clip(lower=-1e3, upper=1e3)
+    data = data.melt("misc/total_timesteps")
+    sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
+    ax.set_title("value Loss")
+
 
 def main_sweep():
-    AVG_LEN = 1
-    # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")):
+    AVG_LEN = 10
+    # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")): 950011095931 950011095931 950011095931 950011095931
     # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/visual-cartpole/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/better*/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -59,12 +70,13 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4)
+            fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, figsize=(20, 20))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
             plot_discriminator_accuracy(data, AVG_LEN, ax3)
             plot_discriminator_loss(data, AVG_LEN, ax4)
+            plot_value_loss(data, AVG_LEN, ax5)
 
             plt.savefig("figures/" + name + ".png")
 
