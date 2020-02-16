@@ -38,22 +38,20 @@ def main():
     use_vf_clipping = True
     dist_mode = "easy"
 
-    envs = ["plunder", "fruitbot", "chaser", "leaper", "bossfight", "maze", "coinrun", "caveflyer", "miner", "bigfish", "heist", "climber", "dodgeball", "jumper", "ninja", "starpilot"]
+    # envs = ["plunder", "fruitbot", "chaser", "leaper", "bossfight", "maze", "coinrun", "caveflyer", "miner", "bigfish", "heist", "climber", "dodgeball", "jumper", "ninja", "starpilot"]
 
 
-    sge = int(os.environ['SGE_TASK_ID'])
-    # if sge in [1, 6, 9, 10]:
-    #     sys.exit()
-    env_name = envs[sge-1]
+    # sge = int(os.environ['SGE_TASK_ID'])
+    env_name = "climber"
     num_frames = 1
 
     num_levels = 200
     # disc_coeff = None
     disc_coeff = 0.1
     if disc_coeff is None:
-        LOG_DIR = "/home/jroy1/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/jroy1/w_disc_again_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
+        LOG_DIR = "/home/josh/w_disc_again_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
 
     test_worker_interval = 0
 
