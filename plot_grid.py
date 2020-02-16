@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("Agg")
 import os
 from tqdm import tqdm
 import sys
@@ -59,9 +61,7 @@ def plot_value_loss(inputs, AVG_LEN, ax):
 
 def main_sweep():
     AVG_LEN = 10
-    # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_short_jumper/*/progress.csv")): 950011095931 950011095931 950011095931 950011095931
-    # for f in tqdm(glob("/home/jroy1/procgen_training_all_later_hard_jumper/*/progress.csv")):
-    for f in tqdm(glob("/home/jroy1/better*/*/progress.csv")):
+    for f in tqdm(glob("/home/jroy1/w_disc_again_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -70,13 +70,13 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, figsize=(20, 20))
+            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(20, 20))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
-            plot_discriminator_accuracy(data, AVG_LEN, ax3)
-            plot_discriminator_loss(data, AVG_LEN, ax4)
-            plot_value_loss(data, AVG_LEN, ax5)
+            # plot_discriminator_accuracy(data, AVG_LEN, ax3)
+            plot_discriminator_loss(data, AVG_LEN, ax3)
+            plot_value_loss(data, AVG_LEN, ax4)
 
             plt.savefig("figures/" + name + ".png")
 
