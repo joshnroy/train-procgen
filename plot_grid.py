@@ -27,6 +27,17 @@ def plot_rewards(inputs, AVG_LEN, ax, ax2):
     sns.lineplot(data=newseries, ax=ax2, ci='sd')
     ax2.set_title("Reward Ratio")
 
+def plot_critic_rating(inputs, AVG_LEN, ax):
+    data = inputs[["loss/critic_min", "loss/critic_max", "misc/total_timesteps"]]
+    if AVG_LEN > 1:
+        data["loss/critic_min"] = data["loss/critic_min"].rolling(AVG_LEN).mean()
+        data["loss/critic_max"] = data["loss/critic_max"].rolling(AVG_LEN).mean()
+    data["loss/critic_min"] = data["loss/critic_min"].clip(lower=-10., upper=10.)
+    data["loss/critic_max"] = data["loss/critic_max"].clip(lower=-10., upper=10.)
+    data = data.melt("misc/total_timesteps")
+    sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
+    ax.set_title("Rewards")
+
 
 def plot_discriminator_accuracy(inputs, AVG_LEN, ax):
     data = inputs[["loss/discriminator_accuracy", "misc/total_timesteps"]]
@@ -60,7 +71,7 @@ def plot_value_loss(inputs, AVG_LEN, ax):
 
 
 def main_sweep():
-    AVG_LEN = 10
+    AVG_LEN = 1
     for f in tqdm(glob("/home/jroy1/w_disc_again_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
@@ -70,13 +81,14 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(20, 20))
+            fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, figsize=(20, 20))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
             # plot_discriminator_accuracy(data, AVG_LEN, ax3)
             plot_discriminator_loss(data, AVG_LEN, ax3)
             plot_value_loss(data, AVG_LEN, ax4)
+            plot_critic_rating(data, AVG_LEN, ax5)
 
             plt.savefig("figures/" + name + ".png")
 
