@@ -42,12 +42,12 @@ def main():
 
 
     # sge = int(os.environ['SGE_TASK_ID'])
-    env_name = "climber"
+    env_name = "maze"
     num_frames = 1
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 0.1
+    disc_coeff = 1.0
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
