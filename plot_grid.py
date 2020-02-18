@@ -4,7 +4,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("TkAgg")
 import os
 from tqdm import tqdm
 import sys
@@ -69,10 +69,71 @@ def plot_value_loss(inputs, AVG_LEN, ax):
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("value Loss")
 
+def main_sweep2():
+    mins = {"coinrun": 5, "starpilot": 2.5, "caveflyer": 3.5, "dodgeball": 1.5, "fruitbot": -1.5, "chaser": .5, "miner": 1.5, "jumper": 3, "leaper": 3, "maze": 4, "bigfish": 1, "heist": 3.5, "climber": 2, "plunder": 4.5, "ninja": 3.5, "bossfight": .5}
+    maxes = {"coinrun": 10, "starpilot": 64, "caveflyer": 12, "dodgeball": 19, "fruitbot": 32.4, "chaser": 13, "miner": 13, "jumper": 10, "leaper": 10, "maze": 10, "bigfish": 40, "heist": 10, "climber": 12.5, "plunder": 30, "ninja": 10, "bossfight": 13}
+    AVG_LEN = 10
+    my_normalized_returns_train = []
+    reported_normalized_returns_train = []
+    my_normalized_returns_test = []
+    reported_normalized_returns_test = []
+    for f in tqdm(glob("/home/josh/w_disc_again_easy_old/*/progress.csv")):
+        if os.stat(f).st_size == 0:
+            continue
+        env_name = f.split("/")[4].split("_")[0]
+        # if env_name in ["maze", "chaser", "dodgeball", "fruitbot", "miner", "heist", "coinrun", "caveflyer"]:
+        # if env_name in ["coinrun"]:
+            # continue
+        procgen_report = "data/procgen_export_data/easy_gen_" + env_name + ".csv"
+        try:
+            data = pd.read_csv(f)
+            data["misc/total_timesteps"] /= 1e6
+            reported_data = pd.read_csv(procgen_report)
+            # name = f[58:-13]
+            name = str.split(f, "/")[4]
+
+            if AVG_LEN > 1:
+                data["eprewmean"] = data["eprewmean"].rolling(AVG_LEN).mean()
+                data["eval_eprewmean"] = data["eval_eprewmean"].rolling(AVG_LEN).mean()
+
+            if len(data["eprewmean"]) > 2000:
+                data["eprewmean"] = data["eprewmean"].groupby(np.arange(len(data["eprewmean"]))//2).mean()
+            data["eprewmean"] = (data["eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
+            my_normalized_returns_train.append(data["eprewmean"])
+            if len(data["eval_eprewmean"]) > 2000:
+                data["eval_eprewmean"] = data["eval_eprewmean"].groupby(np.arange(len(data["eval_eprewmean"]))//2).mean()
+            data["eval_eprewmean"] = (data["eval_eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
+            my_normalized_returns_test.append(data["eval_eprewmean"])
+
+            sns.lineplot(data=data[["eprewmean", "eval_eprewmean"]])
+            reported_data["train_mean0"] = (reported_data["train_mean0"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
+            reported_data["test_mean2"] = (reported_data["test_mean2"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
+            sns.lineplot(data=reported_data[["train_mean0", "test_mean2"]])
+            reported_normalized_returns_train.append(reported_data["train_mean0"])
+            reported_normalized_returns_test.append(reported_data["test_mean2"])
+
+            plt.savefig("figures/" + name + ".png")
+
+            plt.close()
+        except Exception as e:
+            print(f, "FAILED with ", e)
+            continue
+
+    my_normalized_returns_train = pd.DataFrame.from_dict(map(dict, my_normalized_returns_train)).mean(axis=0)
+    my_normalized_returns_test = pd.DataFrame.from_dict(map(dict, my_normalized_returns_test)).mean(axis=0)
+    reported_normalized_returns_train = pd.DataFrame.from_dict(map(dict, reported_normalized_returns_train)).mean(axis=0)
+    reported_normalized_returns_test = pd.DataFrame.from_dict(map(dict, reported_normalized_returns_test)).mean(axis=0)
+    final_mean = pd.DataFrame.from_dict(([my_normalized_returns_train, my_normalized_returns_test, reported_normalized_returns_train, reported_normalized_returns_test]))
+    final_mean = final_mean.transpose()
+    print(final_mean)
+    final_mean.columns = ["My Train", "My Test", "Reported Train", "Reported Test"]
+    sns.lineplot(data=final_mean)
+    plt.show()
+
 
 def main_sweep():
     AVG_LEN = 30
-    for f in tqdm(glob("/home/jroy1/w_disc_again_easy/*/progress.csv")):
+    for f in tqdm(glob("/home/josh/w_disc_again_easy_old/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -132,4 +193,4 @@ def main_trials():
             plt.close(fig)
 
 if __name__ == "__main__":
-    main_sweep()
+    main_sweep2()
