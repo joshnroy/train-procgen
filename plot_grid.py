@@ -17,8 +17,8 @@ def plot_rewards(inputs, AVG_LEN, ax, ax2):
     if AVG_LEN > 1:
         data["eprewmean"] = data["eprewmean"].rolling(AVG_LEN).mean()
         data["eval_eprewmean"] = data["eval_eprewmean"].rolling(AVG_LEN).mean()
-    data["eprewmean"] = data["eprewmean"].clip(lower=-10., upper=10.)
-    data["eval_eprewmean"] = data["eval_eprewmean"].clip(lower=-10., upper=10.)
+    # data["eprewmean"] = data["eprewmean"].clip(lower=-10., upper=10.)
+    # data["eval_eprewmean"] = data["eval_eprewmean"].clip(lower=-10., upper=10.)
     newseries = data["eval_eprewmean"] / data["eprewmean"]
     newseries = newseries.clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
@@ -71,7 +71,7 @@ def plot_value_loss(inputs, AVG_LEN, ax):
 
 
 def main_sweep():
-    AVG_LEN = 1
+    AVG_LEN = 30
     for f in tqdm(glob("/home/jroy1/w_disc_again_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
