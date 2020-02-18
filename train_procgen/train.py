@@ -25,7 +25,7 @@ display.start()
 
 def main():
     num_envs = 64
-    learning_rate = 5e-4
+    learning_rate = 5e-6
     ent_coef = .01
     gamma = .999
     lam = .95
@@ -45,8 +45,9 @@ def main():
     env_name = "ninja"
     num_frames = 1
 
-    num_levels = 0
-    LOG_DIR = "/home/josh/procgen_pretraining" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
+    num_test_levels = 0
+    num_levels = 200
+    LOG_DIR = "/home/josh/procgen_pretraining" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
 
     test_worker_interval = 0
 
@@ -84,23 +85,21 @@ def main():
 
     venv = VecNormalize(venv=venv, ob=False)
 
-    # if env_name == "visual-cartpole":
-    #     test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=100, start_level=1543)
-    #     test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
-    #     test_venv.action_space = gym.spaces.Discrete(2)
-    # else:
-    #     test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
-    #     test_venv = VecExtractDictObs(test_venv, "rgb")
+    if env_name == "visual-cartpole":
+        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=100, start_level=1543)
+        test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
+        test_venv.action_space = gym.spaces.Discrete(2)
+    else:
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
+        test_venv = VecExtractDictObs(test_venv, "rgb")
 
-    # if num_frames > 1:
-    #     test_venv = VecFrameStack(test_venv, num_frames)
+    if num_frames > 1:
+        test_venv = VecFrameStack(test_venv, num_frames)
 
-    # test_venv = VecMonitor(
-    #     venv=test_venv, filename=None, keep_buf=100,
-    # )
-    # test_venv = VecExtractDictObs(test_venv, "rgb")
-
-    # test_venv = VecNormalize(venv=test_venv, ob=False)
+    test_venv = VecMonitor(
+        venv=test_venv, filename=None, keep_buf=100,
+    )
+    test_venv = VecNormalize(venv=test_venv, ob=False)
 
     logger.info("creating tf session")
     setup_mpi_gpus()
@@ -135,7 +134,8 @@ def main():
         init_fn=None,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        # load_path="/home/josh/procgen_pretrainingeasy/jumper_num_levels_0_nsteps_256_num_frames_1/checkpoints/00006"
+        load_path="/home/josh/procgen_pretrainingeasy/jumper_num_levels_0_nsteps_256_num_frames_1/checkpoints/01520",
+	eval_env = test_venv,
     )
 
 if __name__ == '__main__':
