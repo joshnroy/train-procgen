@@ -41,22 +41,22 @@ def main():
     envs = ["plunder", "fruitbot", "chaser", "leaper", "bossfight", "maze", "coinrun", "caveflyer", "miner", "bigfish", "heist", "climber", "dodgeball", "jumper", "ninja", "starpilot"]
 
 
-    sge = int(os.environ['SGE_TASK_ID'])
+    # sge = int(os.environ['SGE_TASK_ID'])
     # if sge in [1, 6, 9, 10]:
     #     sys.exit()
-    env_name = envs[sge-1]
+    env_name = "coinrun"
     # env_name = "maze"
     num_frames = 1
 
     # num_test_levels = sge * 10
-    num_test_levels = 1
+    num_test_levels = 10
     num_levels = 200
     # disc_coeff = None
     disc_coeff = 0.1
     if disc_coeff is None:
-        LOG_DIR = "/home/jroy1/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
+        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
-        LOG_DIR = "/home/jroy1/w_disc_again_1level_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+        LOG_DIR = "/home/josh/w_disc_again" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels) + "_moreclipped"
 
     test_worker_interval = 0
 
@@ -99,7 +99,7 @@ def main():
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543 + np.random.randint(100), distribution_mode=dist_mode)
         test_venv = VecExtractDictObs(test_venv, "rgb")
 
     if num_frames > 1:
