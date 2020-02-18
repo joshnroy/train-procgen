@@ -1,6 +1,6 @@
 import tensorflow as tf
-from baselines.adversarial_ppo2 import ppo2
-from baselines.adversarial_ppo2.models import build_impala_cnn, nature_cnn
+from baselines.ppo2 import ppo2
+from baselines.common.models import build_impala_cnn, nature_cnn
 from baselines.common.mpi_util import setup_mpi_gpus
 from procgen import ProcgenEnv
 from baselines.common.vec_env import (
@@ -42,16 +42,11 @@ def main():
 
 
     # sge = int(os.environ['SGE_TASK_ID'])
-    env_name = "climber"
+    env_name = "ninja"
     num_frames = 1
 
-    num_levels = 200
-    # disc_coeff = None
-    disc_coeff = 0.1
-    if disc_coeff is None:
-        LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
-    else:
-        LOG_DIR = "/home/josh/w_disc_again_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
+    num_levels = 0
+    LOG_DIR = "/home/josh/procgen_pretraining" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames)
 
     test_worker_interval = 0
 
@@ -89,29 +84,29 @@ def main():
 
     venv = VecNormalize(venv=venv, ob=False)
 
-    if env_name == "visual-cartpole":
-        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=100, start_level=1543)
-        test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
-        test_venv.action_space = gym.spaces.Discrete(2)
-    else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=10, start_level=1543, distribution_mode=dist_mode)
-        test_venv = VecExtractDictObs(test_venv, "rgb")
+    # if env_name == "visual-cartpole":
+    #     test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=100, start_level=1543)
+    #     test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
+    #     test_venv.action_space = gym.spaces.Discrete(2)
+    # else:
+    #     test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
+    #     test_venv = VecExtractDictObs(test_venv, "rgb")
 
-    if num_frames > 1:
-        test_venv = VecFrameStack(test_venv, num_frames)
+    # if num_frames > 1:
+    #     test_venv = VecFrameStack(test_venv, num_frames)
 
-    test_venv = VecMonitor(
-        venv=test_venv, filename=None, keep_buf=100,
-    )
+    # test_venv = VecMonitor(
+    #     venv=test_venv, filename=None, keep_buf=100,
+    # )
     # test_venv = VecExtractDictObs(test_venv, "rgb")
 
-    test_venv = VecNormalize(venv=test_venv, ob=False)
+    # test_venv = VecNormalize(venv=test_venv, ob=False)
 
     logger.info("creating tf session")
     setup_mpi_gpus()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True #pylint: disable=E1101
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.9
+    config.gpu_options.per_process_gpu_memory_fraction = 0.9
     sess = tf.Session(config=config)
     sess.__enter__()
 
@@ -123,7 +118,7 @@ def main():
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
-        save_interval=0,
+        save_interval=10,
         nsteps=nsteps,
         nminibatches=nminibatches,
         lam=lam,
@@ -140,9 +135,7 @@ def main():
         init_fn=None,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        eval_env=test_venv,
-        num_levels=num_levels,
-        disc_coeff=disc_coeff,
+        # load_path="/home/josh/procgen_pretrainingeasy/jumper_num_levels_0_nsteps_256_num_frames_1/checkpoints/00006"
     )
 
 if __name__ == '__main__':
