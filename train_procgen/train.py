@@ -42,7 +42,7 @@ def main():
 
 
     # sge = int(os.environ['SGE_TASK_ID'])
-    env_name = "maze"
+    env_name = "jumper"
     num_frames = 1
 
     num_levels = 200
