@@ -86,7 +86,7 @@ def main_sweep2():
             # continue
         procgen_report = "data/procgen_export_data/easy_gen_" + env_name + ".csv"
         try:
-            data = pd.read_csv(f)
+            data = pd.read_csv(f)[:1400]
             data["misc/total_timesteps"] /= 1e6
             reported_data = pd.read_csv(procgen_report)
             # name = f[58:-13]
@@ -105,6 +105,8 @@ def main_sweep2():
             data["eval_eprewmean"] = (data["eval_eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
             my_normalized_returns_test.append(data["eval_eprewmean"])
 
+            data = data[:1400]
+            reported_data = reported_data[:1400]
             sns.lineplot(data=data[["eprewmean", "eval_eprewmean"]], palette=['blue', 'orange'])
             reported_data["train_mean0"] = (reported_data["train_mean0"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
             reported_data["test_mean2"] = (reported_data["test_mean2"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
