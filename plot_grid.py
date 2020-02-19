@@ -4,7 +4,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use("TkAgg")
+matplotlib.use("Agg")
 import os
 from tqdm import tqdm
 import sys
@@ -132,8 +132,8 @@ def main_sweep2():
 
 
 def main_sweep():
-    AVG_LEN = 30
-    for f in tqdm(glob("/home/josh/w_disc_again_easy_old/*/progress.csv")):
+    AVG_LEN = 1
+    for f in tqdm(glob("/home/jroy1/w_disc_againeasy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -193,4 +193,4 @@ def main_trials():
             plt.close(fig)
 
 if __name__ == "__main__":
-    main_sweep2()
+    main_sweep()
