@@ -34,7 +34,7 @@ def main():
     nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 25_000_000
+    timesteps_per_proc = 5_000_000
     use_vf_clipping = True
     dist_mode = "easy"
 
@@ -44,13 +44,13 @@ def main():
     # sge = int(os.environ['SGE_TASK_ID'])
     # if sge in [1, 6, 9, 10]:
     #     sys.exit()
-    env_name = "coinrun"
+    env_name = "visual-cartpole"
     # env_name = "maze"
     num_frames = 1
 
     # num_test_levels = sge * 10
-    num_test_levels = 10
-    num_levels = 200
+    num_test_levels = 1
+    num_levels = 1
     # disc_coeff = None
     disc_coeff = 0.1
     if disc_coeff is None:
