@@ -86,7 +86,7 @@ def main_sweep2():
             # continue
         procgen_report = "data/procgen_export_data/easy_gen_" + env_name + ".csv"
         try:
-            data = pd.read_csv(f)[:1400]
+            data = pd.read_csv(f)
             data["misc/total_timesteps"] /= 1e6
             reported_data = pd.read_csv(procgen_report)
             # name = f[58:-13]
@@ -98,19 +98,21 @@ def main_sweep2():
 
             if len(data["eprewmean"]) > 2000:
                 data["eprewmean"] = data["eprewmean"].groupby(np.arange(len(data["eprewmean"]))//2).mean()
-            data["eprewmean"] = (data["eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
-            my_normalized_returns_train.append(data["eprewmean"])
             if len(data["eval_eprewmean"]) > 2000:
                 data["eval_eprewmean"] = data["eval_eprewmean"].groupby(np.arange(len(data["eval_eprewmean"]))//2).mean()
+            sns.lineplot(data=data[["eprewmean", "eval_eprewmean"]], palette=['blue', 'orange'])
+
+            data["eprewmean"] = (data["eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
+            my_normalized_returns_train.append(data["eprewmean"])
             data["eval_eprewmean"] = (data["eval_eprewmean"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
             my_normalized_returns_test.append(data["eval_eprewmean"])
 
-            data = data[:1400]
-            reported_data = reported_data[:1400]
-            sns.lineplot(data=data[["eprewmean", "eval_eprewmean"]], palette=['blue', 'orange'])
+            sns.lineplot(data=reported_data[["train_mean0", "test_mean2"]], palette=['green', 'red'])
+
+            data = data
+            reported_data = reported_data
             reported_data["train_mean0"] = (reported_data["train_mean0"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
             reported_data["test_mean2"] = (reported_data["test_mean2"] - mins[env_name]) / (maxes[env_name] - mins[env_name])
-            sns.lineplot(data=reported_data[["train_mean0", "test_mean2"]], palette=['green', 'red'])
             reported_normalized_returns_train.append(reported_data["train_mean0"])
             reported_normalized_returns_test.append(reported_data["test_mean2"])
 
@@ -125,7 +127,7 @@ def main_sweep2():
     my_normalized_returns_test = pd.DataFrame.from_dict(map(dict, my_normalized_returns_test)).mean(axis=0)
     reported_normalized_returns_train = pd.DataFrame.from_dict(map(dict, reported_normalized_returns_train)).mean(axis=0)
     reported_normalized_returns_test = pd.DataFrame.from_dict(map(dict, reported_normalized_returns_test)).mean(axis=0)
-    final_mean = pd.DataFrame.from_dict(([my_normalized_returns_train, my_normalized_returns_test, reported_normalized_returns_train, reported_normalized_returns_test]))
+    final_mean = pd.DataFrame.from_dict(([my_normalized_returns_train, my_normalized_returns_test, reported_normalized_returns_train, reported_normalized_returns_test]))[:1400]
     final_mean = final_mean.transpose()
     print(final_mean)
     final_mean.columns = ["My Train", "My Test", "Reported Train", "Reported Test"]
