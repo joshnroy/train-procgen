@@ -44,10 +44,10 @@ def main():
     env_name = "visual-cartpole"
     num_frames = 1
 
-    num_test_levels = 10
+    num_test_levels = 1
     num_levels = 1
-    disc_coeff = 1.
-    LOG_DIR = "/home/josh/w_disc_again_vc_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    disc_coeff = 0.
+    LOG_DIR = "/home/josh/w_disc_again_vc_long_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0
@@ -87,7 +87,7 @@ def main():
     venv = VecNormalize(venv=venv, ob=False)
 
     if env_name == "visual-cartpole":
-        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=1543 + np.random.randint(100))
+        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=1543)
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:

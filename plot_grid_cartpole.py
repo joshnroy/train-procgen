@@ -12,12 +12,14 @@ import sys
 sns.set(style="darkgrid")
 
 def main():
-    AVG_LEN = 1
+    AVG_LEN = 10
     my_returns_train = {"10": [], "5": [], "3": [], "1": []}
     ppo_returns_train = {"10": [], "5": [], "3": [], "1": []}
     my_returns_test = {"10": [], "5": [], "3": [], "1": []}
     ppo_returns_test = {"10": [], "5": [], "3": [], "1": []}
-    for f in tqdm(glob("/home/josh/w_disc_againeasy/*/progress.csv")):
+    # for f in tqdm(glob("/home/josh/w_disc_againeasy/*/progress.csv")):
+    for f in tqdm(glob("/home/josh/w_disc_again_vc_long_easy/*/progress.csv")):
+    # for f in tqdm(glob("/home/josh/w_disc_again_vc_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         disc_coeff = f.split("/")[4].split("_")[3]
@@ -45,15 +47,17 @@ def main():
             continue
 
     for num_train_levels in my_returns_train:
+        if len(my_returns_train[num_train_levels]) == 0:
+            continue
         my_returns_train_level = pd.concat(my_returns_train[num_train_levels], axis=0)
-        my_returns_train_level.columns = ["W Domain Confusion Train", "W Domain Confusion Test", "Environment Steps"]
+        my_returns_train_level.columns = ["W Domain Confusion Train", "W Domain Confusion Test", "Environment Steps (Million)"]
         ppo_returns_train_level = pd.concat(ppo_returns_train[num_train_levels], axis=0)
-        ppo_returns_train_level.columns = ["PPO Train", "PPO Test", "Environment Steps"]
+        ppo_returns_train_level.columns = ["PPO Train", "PPO Test", "Environment Steps (Million)"]
 
         finals = pd.concat([my_returns_train_level, ppo_returns_train_level], axis=0)
-        finals = pd.melt(finals, ["Environment Steps"])
+        finals = pd.melt(finals, ["Environment Steps (Million)"], var_name="Legend", value_name="Reward")
 
-        sns.lineplot(data=finals, hue="variable", y="value", x="Environment Steps")
+        sns.lineplot(data=finals, hue="Legend", y="Reward", x="Environment Steps (Million)", ci="sd")
         plt.show()
 
 if __name__ == "__main__":

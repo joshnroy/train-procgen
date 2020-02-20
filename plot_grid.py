@@ -81,9 +81,12 @@ def main_sweep2():
         if os.stat(f).st_size == 0:
             continue
         env_name = f.split("/")[4].split("_")[0]
-        # if env_name in ["maze", "chaser", "dodgeball", "fruitbot", "miner", "heist", "coinrun", "caveflyer"]:
-        # if env_name in ["coinrun"]:
-            # continue
+        # if env_name not in ["dodgeball", "chaser", "miner", "maze", "heist"]:
+        #     continue
+        if env_name not in ["coinrun", "starpilot", "leaper", "plunder", "bigfish", "jumper"]:
+            continue
+        # if env_name not in ["bossfight", "caveflyer", "fruitbot", "climber", "ninja"]:
+        #     continue
         procgen_report = "data/procgen_export_data/easy_gen_" + env_name + ".csv"
         try:
             data = pd.read_csv(f)
