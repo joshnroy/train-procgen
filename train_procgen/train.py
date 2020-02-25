@@ -18,13 +18,13 @@ import gym
 import gym_cartpole_visual
 import numpy as np
 
-from pyvirtualdisplay import Display
-display = Display(visible=0, size=(100, 100), backend="xvfb")
-display.start()
+# from pyvirtualdisplay import Display
+# display = Display(visible=0, size=(100, 100), backend="xvfb")
+# display.start()
 
 
 def main():
-    num_envs = 64
+    num_envs = 9
     learning_rate = 5e-4
     ent_coef = .01
     gamma = .999
@@ -42,12 +42,12 @@ def main():
 
 
     # sge = int(os.environ['SGE_TASK_ID'])
-    env_name = "jumper"
+    env_name = "coinrun"
     num_frames = 1
 
     num_levels = 200
     # disc_coeff = None
-    disc_coeff = 1.0
+    disc_coeff = 0.0
     if disc_coeff is None:
         LOG_DIR = "/home/josh/" + env_name + "/" + env_name + "_disc_coeff_ramping2_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps)
     else:
@@ -123,7 +123,7 @@ def main():
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
-        save_interval=0,
+        save_interval=100,
         nsteps=nsteps,
         nminibatches=nminibatches,
         lam=lam,
