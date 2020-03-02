@@ -33,7 +33,7 @@ def main():
     nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 1_000_000
+    timesteps_per_proc = 25_000_000
     use_vf_clipping = True
     dist_mode = "easy"
 
@@ -41,13 +41,13 @@ def main():
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
-    env_name = "visual-cartpole"
+    env_name = "maze"
     num_frames = 1
 
-    num_test_levels = 1
-    num_levels = 1
+    num_test_levels = 10
+    num_levels = 200
     disc_coeff = 0.
-    LOG_DIR = "/home/josh/w_disc_again_vc_long_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "/home/jroy1/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0
@@ -105,6 +105,7 @@ def main():
     logger.info("creating tf session")
     # setup_mpi_gpus()
     config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = 0.9
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     sess = tf.Session(config=config)
     sess.__enter__()
