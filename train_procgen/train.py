@@ -41,13 +41,13 @@ def main():
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
-    env_name = "maze"
+    env_name = "jumper"
     num_frames = 1
 
-    num_test_levels = 10
-    num_levels = 200
-    disc_coeff = 0.
-    LOG_DIR = "/home/jroy1/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    num_test_levels = 1
+    num_levels = 1
+    disc_coeff = 0.0
+    LOG_DIR = "/home/josh/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels) + "_SGD_"
     LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0
@@ -91,7 +91,7 @@ def main():
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543 + np.random.randint(100), distribution_mode=dist_mode)
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
         test_venv = VecExtractDictObs(test_venv, "rgb")
 
     if num_frames > 1:
