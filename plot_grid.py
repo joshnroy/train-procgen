@@ -139,8 +139,8 @@ def main_sweep2():
 
 
 def main_sweep():
-    AVG_LEN = 30
-    for f in tqdm(glob("/home/josh/w_disc_again_easy_stuff/*/progress.csv")):
+    AVG_LEN = 1
+    for f in tqdm(glob("/home/jroy1/procgen_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -149,14 +149,14 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, figsize=(20, 20))
+            fig, (ax1, ax2) = plt.subplots(2, figsize=(10, 10))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
             # plot_discriminator_accuracy(data, AVG_LEN, ax3)
-            plot_discriminator_loss(data, AVG_LEN, ax3)
-            plot_value_loss(data, AVG_LEN, ax4)
-            plot_critic_rating(data, AVG_LEN, ax5)
+            # plot_discriminator_loss(data, AVG_LEN, ax3)
+            # plot_value_loss(data, AVG_LEN, ax4)
+            # plot_critic_rating(data, AVG_LEN, ax5)
 
             plt.savefig("figures/" + name + ".png")
 
@@ -186,12 +186,12 @@ def main_trials():
 
         name = thing
 
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4)
+        fig, (ax1, ax2) = plt.subplots(2)
         fig.suptitle(name)
 
         plot_rewards(data, AVG_LEN, ax1, ax2)
-        plot_discriminator_accuracy(data, AVG_LEN, ax3)
-        plot_discriminator_loss(data, AVG_LEN, ax4)
+        # plot_discriminator_accuracy(data, AVG_LEN, ax3)
+        # plot_discriminator_loss(data, AVG_LEN, ax4)
 
         if True:
             plt.show()
@@ -200,4 +200,4 @@ def main_trials():
             plt.close(fig)
 
 if __name__ == "__main__":
-    main_sweep2()
+    main_sweep()
