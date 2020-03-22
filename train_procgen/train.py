@@ -33,21 +33,29 @@ def main():
     nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
-    timesteps_per_proc = 25_000_000
     use_vf_clipping = True
     dist_mode = "easy"
 
-    i_trial = 1
+    i_trial = 2
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
     env_name = "jumper"
     num_frames = 1
 
+    if env_name == "visual-cartpole":
+        timesteps_per_proc = 1_000_000
+    elif dist_mode == "easy":
+        timesteps_per_proc = 25_000_000
+    else:
+        timesteps_per_proc = 200_000_000
+
+
     num_test_levels = 1
     num_levels = 1
-    disc_coeff = 0.0
-    LOG_DIR = "/home/josh/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels) + "_SGD_"
+    disc_coeff = 1.0
+    LOG_DIR = "/home/josh/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR += "_rmsprop_wgan_"
     LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0
@@ -117,7 +125,7 @@ def main():
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
-        save_interval=0,
+        save_interval=100,
         nsteps=nsteps,
         nminibatches=nminibatches,
         lam=lam,
