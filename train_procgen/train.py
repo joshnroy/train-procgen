@@ -36,11 +36,11 @@ def main():
     use_vf_clipping = True
     dist_mode = "easy"
 
-    i_trial = 2
+    i_trial = 0
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
-    env_name = "maze"
+    env_name = "jumper"
     num_frames = 1
 
     if env_name == "visual-cartpole":
