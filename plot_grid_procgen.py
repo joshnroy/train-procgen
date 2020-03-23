@@ -99,7 +99,7 @@ def main_sweep():
 def main():
     AVG_LEN = 10
     all_data = []
-    for f in tqdm(glob("visual-baselines-easy/*jumper*/*.csv")):
+    for f in tqdm(glob("visual-baselines-easy/*bigfish*/*.csv")):
         split = f.replace("/", "_").split("_")
         env_name = split[1]
         disc_coeff = split[4]
@@ -122,15 +122,15 @@ def main():
 
     df = pd.concat(all_data)
 
-    df["eprewmean"] = df["eprewmean"].clip(lower=-10., upper=10.)
-    df["eval_eprewmean"] = df["eval_eprewmean"].clip(lower=-10., upper=10.)
+    df["eprewmean"] = df["eprewmean"].clip(lower=-10., upper=50.)
+    df["eval_eprewmean"] = df["eval_eprewmean"].clip(lower=-10., upper=50.)
     if AVG_LEN > 1:
         df["eprewmean"] = df["eprewmean"].ewm(span=AVG_LEN).mean()
         df["eval_eprewmean"] = df["eval_eprewmean"].ewm(span=AVG_LEN).mean()
 
     print("Starting plotting")
     fig, (ax1, ax2) = plt.subplots(2, figsize=(20, 20))
-    fig.suptitle("Visual Easy Jumper, PPO")
+    fig.suptitle("Visual Easy BigFish, PPO")
     sns.lineplot(y="eprewmean", x="misc/total_timesteps", data=df, hue="num_levels", ci="sd", ax=ax1, palette=sns.color_palette())
     sns.lineplot(y="eval_eprewmean", x="misc/total_timesteps", data=df, hue="num_levels", ci="sd", ax=ax2, palette=sns.color_palette())
     print("Done plotting")
