@@ -26,6 +26,7 @@ display.start()
 def main():
     num_envs = 64
     learning_rate = 5e-4
+    # learning_rate = 1e-3
     ent_coef = .01
     gamma = .999
     lam = .95
@@ -40,11 +41,11 @@ def main():
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
-    env_name = "ninja"
+    env_name = "jumper"
     num_frames = 1
 
     if env_name == "visual-cartpole":
-        timesteps_per_proc = 1_000_000
+        timesteps_per_proc = 5_000_000
     elif dist_mode == "easy":
         timesteps_per_proc = 25_000_000
     else:
@@ -53,8 +54,11 @@ def main():
 
     num_test_levels = 1
     num_levels = 1
-    disc_coeff = 0.025
-    LOG_DIR = "/home/josh/procgen_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    disc_coeff = 0.05
+    # LOG_DIR = "/home/josh/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/josh/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/josh/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "/home/josh/procgen_combined_testing_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_rmsprop_wgan_same_trainer"
     LOG_DIR += "_trial_" + str(i_trial)
 
@@ -95,11 +99,11 @@ def main():
     venv = VecNormalize(venv=venv, ob=False)
 
     if env_name == "visual-cartpole":
-        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=1543 + np.random.randint(100))
+        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=1543)
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543 + np.random.randint(100), distribution_mode=dist_mode)
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
         test_venv = VecExtractDictObs(test_venv, "rgb")
 
     if num_frames > 1:
