@@ -31,7 +31,7 @@ def main():
     gamma = .999
     lam = .95
     nminibatches = 8
-    nsteps = (2048 // nminibatches)
+    nsteps = (1024 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
     use_vf_clipping = True
@@ -41,20 +41,23 @@ def main():
 
     # for i_trial in range(num_trials):
     print("STARTING TRIAL", i_trial)
-    env_name = "jumper"
+    env_name = "ninja"
     num_frames = 1
 
     if env_name == "visual-cartpole":
-        timesteps_per_proc = 5_000_000
+        timesteps_per_proc = 1_000_000
+        save_interval=10
     elif dist_mode == "easy":
         timesteps_per_proc = 25_000_000
+        save_interval=100
     else:
         timesteps_per_proc = 200_000_000
+        save_interval=100
 
 
     num_test_levels = 1
     num_levels = 1
-    disc_coeff = 0.05
+    disc_coeff = 0.1
     # LOG_DIR = "/home/josh/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     # LOG_DIR = "/home/josh/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     # LOG_DIR = "/home/josh/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
@@ -129,7 +132,7 @@ def main():
         env=venv,
         network=conv_fn,
         total_timesteps=timesteps_per_proc,
-        save_interval=100,
+        save_interval=save_interval,
         nsteps=nsteps,
         nminibatches=nminibatches,
         lam=lam,
