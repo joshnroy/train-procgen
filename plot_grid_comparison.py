@@ -64,7 +64,7 @@ def main_sweep_comparision():
         # if big_df_len > len(data):
         #     print(big_df)
         #     sys.exit()
-        sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", style="disc_name", data=big_df, alpha=1.0, ax=ax1, ci='sd')
+        sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", style="disc_name", data=big_df, alpha=1.0, ax=ax1, ci='sd', legend="full")
         plt.savefig("figures/" + env + ".png")
 
         plt.close(fig)
