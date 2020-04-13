@@ -9,6 +9,10 @@ import os
 from tqdm import tqdm
 import sys
 
+from pyvirtualdisplay import Display
+display = Display(visible=0, size=(100, 100), backend="xvfb")
+display.start()
+
 sns.set(style="darkgrid")
 
 
@@ -58,7 +62,7 @@ def plot_discriminator_loss(inputs, AVG_LEN, ax):
     data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
-    ax.set_title("Discriminator Loss")
+    ax.set_title("Critic Loss")
 
 def plot_value_loss(inputs, AVG_LEN, ax):
     data = inputs[["loss/value_loss", "misc/total_timesteps"]]
@@ -139,24 +143,24 @@ def main_sweep2():
 
 
 def main_sweep():
-    AVG_LEN = 1
-    for f in tqdm(glob("/home/jroy1/procgen_easy/*/progress.csv")):
+    AVG_LEN = 100
+    for f in tqdm(glob("/home/jroy1/procgen_wdisc_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
             data = pd.read_csv(f)
-            data["misc/total_timesteps"] /= 1e6
+            # data["misc/total_timesteps"] /= 1e6
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2) = plt.subplots(2, figsize=(10, 10))
+            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(10, 10))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
             # plot_discriminator_accuracy(data, AVG_LEN, ax3)
-            # plot_discriminator_loss(data, AVG_LEN, ax3)
+            plot_discriminator_loss(data, AVG_LEN, ax3)
             # plot_value_loss(data, AVG_LEN, ax4)
-            # plot_critic_rating(data, AVG_LEN, ax5)
+            plot_critic_rating(data, AVG_LEN, ax4)
 
             plt.savefig("figures/" + name + ".png")
 
@@ -186,12 +190,12 @@ def main_trials():
 
         name = thing
 
-        fig, (ax1, ax2) = plt.subplots(2)
+        fig, (ax1, ax2, ax3) = plt.subplots(3)
         fig.suptitle(name)
 
         plot_rewards(data, AVG_LEN, ax1, ax2)
         # plot_discriminator_accuracy(data, AVG_LEN, ax3)
-        # plot_discriminator_loss(data, AVG_LEN, ax4)
+        # plot_discriminator_loss(data, AVG_LEN, ax3)
 
         if True:
             plt.show()

@@ -15,33 +15,38 @@ import argparse
 import os
 import sys
 import gym
-import gym_cartpole_visual
+# import gym_cartpole_visual
 import numpy as np
-
-from pyvirtualdisplay import Display
-display = Display(visible=0, size=(100, 100), backend="xvfb")
-display.start()
 
 
 def main():
     num_envs = 64
     learning_rate = 5e-4
-    # learning_rate = 1e-3
     ent_coef = .01
     gamma = .999
     lam = .95
     nminibatches = 8
-    nsteps = (1024 // nminibatches)
+    nsteps = (2048 // nminibatches)
     ppo_epochs = 3
     clip_range = .2
     use_vf_clipping = True
     dist_mode = "easy"
 
-    i_trial = 0
+    # if int(os.environ["SGE_TASK_ID"]) not in [8, 10, 11, 12, 13, 14, 15, 16]:
+    #     sys.exit()
 
-    # for i_trial in range(num_trials):
-    print("STARTING TRIAL", i_trial)
-    env_name = "ninja"
+    indicator = int(os.environ["SGE_TASK_ID"]) - 1
+
+    target_levels = [1543, 7991, 3671, 2336, 6420]
+
+    i_trial = indicator % len(target_levels)
+
+    target_level = target_levels[i_trial]
+
+    env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
+
+    i_env = indicator // len(target_levels)
+    env_name = env_names[i_env]
     num_frames = 1
 
     if env_name == "visual-cartpole":
@@ -55,13 +60,17 @@ def main():
         save_interval=100
 
 
-    num_test_levels = 1
     num_levels = 1
-    disc_coeff = 0.1
-    # LOG_DIR = "/home/josh/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/josh/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/josh/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    LOG_DIR = "/home/josh/procgen_combined_testing_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    num_test_levels = 1
+
+    disc_coeff = 10.
+    # LOG_DIR = "/home/jroy1/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/jroy1/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/jroy1/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/jroy1/procgen_combined_testing_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/jroy1/procgen_combined_testing_flipped_disc_coeff_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "/home/jroy1/procgen_vanilla" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "/home/jroy1/procgen_wdisc_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_rmsprop_wgan_same_trainer"
     LOG_DIR += "_trial_" + str(i_trial)
 
@@ -102,11 +111,11 @@ def main():
     venv = VecNormalize(venv=venv, ob=False)
 
     if env_name == "visual-cartpole":
-        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=1543)
+        test_venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_test_levels, start_level=target_level)
         test_venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         test_venv.action_space = gym.spaces.Discrete(2)
     else:
-        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=1543, distribution_mode=dist_mode)
+        test_venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_test_levels, start_level=target_level, distribution_mode=dist_mode)
         test_venv = VecExtractDictObs(test_venv, "rgb")
 
     if num_frames > 1:
