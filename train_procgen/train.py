@@ -32,46 +32,55 @@ def main():
     use_vf_clipping = True
     dist_mode = "easy"
 
-    # if int(os.environ["SGE_TASK_ID"]) not in [8, 10, 11, 12, 13, 14, 15, 16]:
-    #     sys.exit()
-
-    indicator = int(os.environ["SGE_TASK_ID"]) - 1
-
     target_levels = [1543, 7991, 3671, 2336, 6420]
+    if "SGE_TASK_ID" in os.environ:
+        indicator = int(os.environ["SGE_TASK_ID"]) - 1
+        i_trial = indicator % len(target_levels)
+        i_env = indicator // len(target_levels)
+    else:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--i_trial", help="trial number", required=True)
+        parser.add_argument("--i_env", help="env number", required=True)
+        args = parser.parse_args()
+        i_trial = int(args.i_trial)
+        i_env = int(args.i_env)
 
-    i_trial = indicator % len(target_levels)
+
+
 
     target_level = target_levels[i_trial]
 
     env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
-    i_env = indicator // len(target_levels)
     env_name = env_names[i_env]
     num_frames = 1
+
+    if env_name != "climber":
+        sys.exit()
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
         save_interval=10
     elif dist_mode == "easy":
         timesteps_per_proc = 25_000_000
-        save_interval=100
+        save_interval=int(5e2)
     else:
         timesteps_per_proc = 200_000_000
-        save_interval=100
+        save_interval=int(5e2)
 
 
     num_levels = 1
     num_test_levels = 1
 
     disc_coeff = 10.
-    # LOG_DIR = "/home/jroy1/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_combined_testing_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_combined_testing_flipped_disc_coeff_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_vanilla" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    LOG_DIR = "/home/jroy1/procgen_wdisc_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "procgen_wconf_" + dist_mode + "2/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    # LOG_DIR = "procgen_limitedtarget_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels) + "_100k_"
+    # LOG_DIR = "procgen_generalization_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_rmsprop_wgan_same_trainer"
+    # LOG_DIR +=  "_olderbigger"
+    LOG_DIR +=  "_gp"
+    # LOG_DIR +=  "_evenbigger"
+    LOG_DIR +=  "_disc5"
     LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0

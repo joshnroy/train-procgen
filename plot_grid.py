@@ -36,8 +36,8 @@ def plot_critic_rating(inputs, AVG_LEN, ax):
     if AVG_LEN > 1:
         data["loss/critic_min"] = data["loss/critic_min"].rolling(AVG_LEN, center=True).mean()
         data["loss/critic_max"] = data["loss/critic_max"].rolling(AVG_LEN, center=True).mean()
-    data["loss/critic_min"] = data["loss/critic_min"].clip(lower=-10., upper=10.)
-    data["loss/critic_max"] = data["loss/critic_max"].clip(lower=-10., upper=10.)
+    # data["loss/critic_min"] = data["loss/critic_min"].clip(lower=-10., upper=10.)
+    # data["loss/critic_max"] = data["loss/critic_max"].clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Rewards")
@@ -58,8 +58,8 @@ def plot_discriminator_loss(inputs, AVG_LEN, ax):
     if AVG_LEN > 1:
         data["loss/discriminator_loss"] = data["loss/discriminator_loss"].rolling(AVG_LEN, center=True).mean()
         data["loss/pd_loss"] = data["loss/pd_loss"].rolling(AVG_LEN, center=True).mean()
-    data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-10., upper=10.)
-    data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-10., upper=10.)
+    # data["loss/discriminator_loss"] = data["loss/discriminator_loss"].clip(lower=-10., upper=10.)
+    # data["loss/pd_loss"] = data["loss/pd_loss"].clip(lower=-10., upper=10.)
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
     ax.set_title("Critic Loss")
@@ -143,8 +143,8 @@ def main_sweep2():
 
 
 def main_sweep():
-    AVG_LEN = 100
-    for f in tqdm(glob("/home/jroy1/procgen_wdisc_easy/*/progress.csv")):
+    AVG_LEN = 1
+    for f in tqdm(glob("/home/jroy1/procgen_generalization_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         try:
@@ -153,14 +153,14 @@ def main_sweep():
             # name = f[58:-13]
             name = str.split(f, "/")[4]
 
-            fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(10, 10))
+            fig, (ax1, ax2, ax3) = plt.subplots(3, figsize=(10, 10))
             fig.suptitle(name)
 
             plot_rewards(data, AVG_LEN, ax1, ax2)
             # plot_discriminator_accuracy(data, AVG_LEN, ax3)
             plot_discriminator_loss(data, AVG_LEN, ax3)
             # plot_value_loss(data, AVG_LEN, ax4)
-            plot_critic_rating(data, AVG_LEN, ax4)
+            # plot_critic_rating(data, AVG_LEN, ax4)
 
             plt.savefig("figures/" + name + ".png")
 
