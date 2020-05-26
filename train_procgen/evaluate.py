@@ -50,14 +50,15 @@ def encircle(x,y, ax=None, **kw):
     ax.add_patch(poly)
 
 def density_estimation(m1, m2):
-    xmin = -3.
-    ymin = -3.
-    xmax = 3.
-    ymax = 3.
-    X, Y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]                                                     
-    positions = np.vstack([X.ravel(), Y.ravel()])                                                       
-    values = np.vstack([m1, m2])                                                                        
-    kernel = gaussian_kde(values)                                                                 
+    print(m1.shape, m2.shape)
+    xmin = -200.
+    ymin = -200.
+    xmax = 200.
+    ymax = 200.
+    X, Y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
+    positions = np.vstack([X.ravel(), Y.ravel()])
+    values = np.vstack([m1, m2])
+    kernel = gaussian_kde(values)
     Z = np.reshape(kernel(positions).T, X.shape)
     return X, Y, Z
 
@@ -86,7 +87,7 @@ def main():
     clip_range = .2
     use_vf_clipping = True
     dist_mode = "easy"
-    
+
     visualization = False
     save_images = False
     vrgoggles = True
@@ -128,12 +129,11 @@ def main():
     else:
         timesteps_per_proc = 200_000_000
         save_interval=100
-    
 
 
     num_levels = 1
     num_test_levels = 1
-    num_iterations = 100
+    num_iterations = 2
 
     test_worker_interval = 0
 
@@ -150,7 +150,6 @@ def main():
     log_comm = comm.Split(1 if is_test_worker else 0, 0)
     format_strs = ['csv', 'stdout', 'tensorboard'] if log_comm.Get_rank() == 0 else []
 
-    # load_path = "vc_easy/visual-cartpole_disc_coeff_10.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_0/checkpoints/00390"
     load_path = "train-procgen/vc_easy/visual-cartpole_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_" + str(i_trial) + "/checkpoints/00390"
     disc_coeff = float(load_path.split("_")[4])
     # load_path = "train-procgen/procgen_wconf_easy_3/" + env_name + "_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_0/checkpoints/01500"
@@ -311,9 +310,10 @@ def main():
         target_latents = (target_latents - all_latents.min()) / (all_latents.max() - all_latents.min())
         all_latents = pd.concat([source_latents, target_latents])
 
+        print(np.mean(source_rewards), np.mean(target_rewards))
         print("ABOUT TO TRANSFORM LATENTS")
         pca = PCA(n_components=50)
-        tsne = TSNE(n_components=2)
+        tsne = TSNE(n_components=2, n_jobs=-1, perplexity=5)
         all_latents_transformed = pca.fit_transform(all_latents.to_numpy())
         print("PCA DONE")
         all_latents_transformed = tsne.fit_transform(all_latents_transformed)
@@ -327,10 +327,10 @@ def main():
 
 
         # sns.scatterplot(x="Component 1", y="Component 2", hue="Environment", data=all_latents, alpha=0.1, marker=False, ax=ax1)
-        source_latents_smol = source_latents[:500]
-        target_latents_smol = target_latents[:500]
+        # source_latents_smol = source_latents[:500]
+        # target_latents_smol = target_latents[:500]
 
-        artists = []
+        # artists = []
 
         print("ABOUT TO ESTIMATE DENSITY")
         target_x, target_y, target_z = density_estimation(target_latents[0], target_latents[1])
@@ -358,11 +358,12 @@ def main():
         proxy_target = plt.Rectangle((0, 0), 1, 1, fc='Purple')
         plt.legend([proxy_source, proxy_target], ["Source", "Target"])
 
-        plt.title("PPO Features")
+        plt.title("WAPPO Features")
         plt.xlabel("Component 1")
         plt.ylabel("Component 2")
-        plt.xlim(-3., 3.)
-        plt.ylim(-3, 3.)
+        plt.xlim(-200., 200.)
+        plt.ylim(-200., 200.)
+        print("SAVING", i_trial)
         plt.savefig("scatter.png", bbox_inches="tight")
 
     if save_images:
@@ -385,7 +386,7 @@ def main():
         for i, t_o in tqdm(enumerate(target_obs), total=len(target_obs)):
             plt.imsave(dir_name_b + "img" + str(i) + ".png", t_o)
     if vrgoggles: # Evaluate VRGoggles
-        with open("vrgoggles_out_" + str(env_name) + ".txt", 'a') as outfile:
+        with open("vrgoggles_out_" + str(env_name) + "_" + dist_mode + ".txt", 'a') as outfile:
             outfile.write(str(i_trial) + ", " + str(np.mean(source_rewards)) + ", " + str(np.mean(target_rewards)) + "\n")
         print("Source Reward", np.mean(source_rewards), "Target Reward", np.mean(target_rewards))
 

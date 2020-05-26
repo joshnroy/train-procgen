@@ -78,11 +78,17 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
 
         if vc:
             files = "vc_easy/*" + env + "*/progress.csv"
+            dist_mode = "easy"
+            num_timesteps = 1.
         else:
             if not hard:
                 files = "procgen_wconf_easy_3/*" + env + "*/progress.csv"
+                dist_mode = "easy"
+                num_timesteps = 25.
             else:
                 files = "procgen_wconf_hard/*" + env + "*/progress.csv"
+                dist_mode = "hard"
+                num_timesteps = 200.
 
         if len(glob(files)) == 0:
             continue
@@ -156,7 +162,7 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
                 continue
 
         try:
-            vr_data_raw = pd.read_csv("../vrgoggles/vrgoggles_out_" + str(env) + ".csv")
+            vr_data_raw = pd.read_csv("../vrgoggles/vrgoggles_out_" + str(env) + "_" + dist_mode + ".csv")
             vr_data = pd.DataFrame()
             plot_len = int(0.05 * len(data))
             for _, row in vr_data_raw.iterrows():
@@ -222,7 +228,7 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
             mean_target_reward = (grouped["Normalized Target  Reward"].mean(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             std_source_reward = (grouped["Normalized Source Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             std_target_reward = (grouped["Normalized Target  Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
-            x = np.arange(len(mean_source_reward)) * (200e6 / len(mean_source_reward))
+            x = np.arange(len(mean_source_reward)) * (num_timesteps / len(mean_source_reward))
             artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[disc_name], label=disc_name + " Source")[0])
             plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[disc_name], alpha=0.2)
             artists.append(plt.plot(x, mean_target_reward, linestyle='dashed', color=colors[disc_name], label=disc_name + " Target")[0])
@@ -236,10 +242,11 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
     if vc:
         fig.savefig("figures/vc-training.png", bbox_inches="tight")
     else:
-        fig.savefig("figures/procgen-training.png", bbox_inches="tight")
+        fig.savefig("figures/procgen-training_" + dist_mode + ".png", bbox_inches="tight")
 
     plt.close()
 
 if __name__ == "__main__":
     main_sweep_comparision(original_procgen=False, vc=True)
     main_sweep_comparision(original_procgen=False, vc=False)
+    main_sweep_comparision(original_procgen=False, vc=False, hard=True)
