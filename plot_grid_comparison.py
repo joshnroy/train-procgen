@@ -11,12 +11,9 @@ import matplotlib.style as style
 from matplotlib import rcParams
 import brewer2mpl
 
-# sns.set(style="darkgrid", rc={"lines.linewidth": 4.})
 style.use("seaborn-darkgrid")
 rcParams['lines.linewidth'] = 4
 rcParams['font.size'] = 12
-
-# plt.xkcd()
 
 def plot_rewards(inputs, AVG_LEN, ax, colors=None):
     data = inputs[["eprewmean", "eval_eprewmean", "misc/total_timesteps"]]
@@ -30,7 +27,7 @@ def plot_rewards(inputs, AVG_LEN, ax, colors=None):
     data = data.melt("misc/total_timesteps")
     sns.lineplot(x="misc/total_timesteps", y="value", hue="variable", data=data, alpha=1.0, ax=ax, ci='sd')
 
-def main_sweep_comparision(original_procgen=False, vc=True):
+def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
     if vc:
         envs = ['visual-cartpole']
     else:
@@ -58,7 +55,10 @@ def main_sweep_comparision(original_procgen=False, vc=True):
     if vc:
         AVG_LEN = 0.01
     else:
-        AVG_LEN = 0.01
+        if hard:
+            AVG_LEN = 0.001
+        else:
+            AVG_LEN = 0.01
     overall_df = pd.DataFrame()
     square_len_envs = int(np.sqrt(len(envs)))
     figheight = 10
@@ -67,22 +67,22 @@ def main_sweep_comparision(original_procgen=False, vc=True):
     artists = []
     colors = brewer2mpl.get_map('Set2', 'Qualitative', 4).mpl_colors
     colors.reverse()
+
+    colors = {x: colors[i] for i, x in enumerate(["PPO", "Robust Domain Randomization", "VR Goggles", "Wasserstein Adversarial PPO"])}
     if vc:
         min_periods = 10
     else:
         min_periods = 20
     for i_env, env in tqdm(enumerate(envs), total=len(envs)):
         big_df = pd.DataFrame()
-        # files = "procgen_original_wconf_easy/*" + env + "*/progress.csv" if original_procgen else "procgen_comparison_easy/*" + env + "*/progress.csv"
-        # files = "procgen_generalization_easy/*" + env + "*/progress.csv"
-        # files = "vc_wconfgeneralization/*" + env + "*/progress.csv"
-        # files = "visual-cartpole/*" + env + "*/progress.csv"
-        # files = "vc_easy/*" + env + "*/progress.csv"
 
         if vc:
             files = "vc_easy/*" + env + "*/progress.csv"
         else:
-            files = "procgen_wconf_easy_3/*" + env + "*/progress.csv"
+            if not hard:
+                files = "procgen_wconf_easy_3/*" + env + "*/progress.csv"
+            else:
+                files = "procgen_wconf_hard/*" + env + "*/progress.csv"
 
         if len(glob(files)) == 0:
             continue
@@ -142,6 +142,8 @@ def main_sweep_comparision(original_procgen=False, vc=True):
             try:
                 data = pd.read_csv(f)
                 trial_num = int(f[-14:-13])
+                if trial_num > 2:
+                    continue
                 data['disc_name'] = pd.Series([name for _ in range(len(data))], index=data.index)
                 data['trial_num'] = pd.Series([trial_num for _ in range(len(data))], index=data.index)
                 if AVG_LEN != 1:
@@ -156,13 +158,14 @@ def main_sweep_comparision(original_procgen=False, vc=True):
         try:
             vr_data_raw = pd.read_csv("../vrgoggles/vrgoggles_out_" + str(env) + ".csv")
             vr_data = pd.DataFrame()
+            plot_len = int(0.05 * len(data))
             for _, row in vr_data_raw.iterrows():
                 smol_vr_data = pd.DataFrame()
-                smol_vr_data["eprewmean"] = pd.Series([row[1]][0] for _ in range(len(data)))
-                smol_vr_data["eval_eprewmean"] = pd.Series([row[2]][0] for _ in range(len(data)))
-                smol_vr_data["disc_name"] = pd.Series(["VR Goggles" for _ in range(len(data))])
-                smol_vr_data["trial_num"] = pd.Series([int(row[0]) for _ in range(len(data))])
-                smol_vr_data["misc/total_timesteps"] = data["misc/total_timesteps"]
+                smol_vr_data["eprewmean"] = pd.Series([row[1]][0] for _ in range(plot_len))
+                smol_vr_data["eval_eprewmean"] = pd.Series([row[2]][0] for _ in range(plot_len))
+                smol_vr_data["disc_name"] = pd.Series(["VR Goggles" for _ in range(plot_len)])
+                smol_vr_data["trial_num"] = pd.Series([int(row[0]) for _ in range(plot_len)])
+                smol_vr_data["misc/total_timesteps"] = data["misc/total_timesteps"].to_numpy()[len(data) - plot_len:]
                 vr_data = vr_data.append(smol_vr_data, ignore_index=True)
             big_df = big_df.append(vr_data, ignore_index=True)
         except Exception as e:
@@ -186,10 +189,10 @@ def main_sweep_comparision(original_procgen=False, vc=True):
                 x = grouped["misc/total_timesteps"].mean().to_numpy() / 1e6
                 if len(mean_source_reward) < 1506:
                     print(env, disc_name, len(mean_source_reward))
-                artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[i_disc], label=disc_name + " Source")[0])
-                plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[i_disc], alpha=0.2)
-                artists.append(plt.plot(x, mean_target_reward, linestyle='dashed', color=colors[i_disc], label=disc_name + " Target")[0])
-                plt.fill_between(x, mean_target_reward - std_target_reward / 2., mean_target_reward + std_target_reward / 2., color=colors[i_disc], alpha=0.2)
+                artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[disc_name], label=disc_name + " Source")[0])
+                plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[disc_name], alpha=0.2)
+                artists.append(plt.plot(x, mean_target_reward, linestyle='dashed', color=colors[disc_name], label=disc_name + " Target")[0])
+                plt.fill_between(x, mean_target_reward - std_target_reward / 2., mean_target_reward + std_target_reward / 2., color=colors[disc_name], alpha=0.2)
         except Exception as e:
             print(e)
             continue
@@ -200,16 +203,6 @@ def main_sweep_comparision(original_procgen=False, vc=True):
             openai_data = openai_data[["misc/total_timesteps", "eprewmean", "eval_eprewmean"]]
             openai_data["disc_name"] = pd.Series(["openai_original" for _ in range(len(openai_data))])
             big_df = big_df.append(openai_data)
-
-        # big_df = big_df.melt(["misc/total_timesteps", "disc_name"])
-
-        # big_df.columns = ["Timesteps", "Algorithm", "Variable", "Reward"]
-
-
-        # sns.lineplot(x="Timesteps", y="Reward", style="Variable", hue="Algorithm", data=big_df, alpha=1.0, ax=axes[i_env % square_len_envs, i_env // square_len_envs], ci='sd', legend="full")
-        # plt.savefig("figures/" + env + ".png", bbox_inches="tight")
-
-        # plt.close(fig)
 
         if env != "visual-cartpole":
             big_df["Normalized Source Reward"] = (big_df["Source Reward"] - min_max_dict[env][0]) / (min_max_dict[env][1] - min_max_dict[env][0])
@@ -230,10 +223,10 @@ def main_sweep_comparision(original_procgen=False, vc=True):
             std_source_reward = (grouped["Normalized Source Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             std_target_reward = (grouped["Normalized Target  Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             x = np.arange(len(mean_source_reward)) * (200e6 / len(mean_source_reward))
-            artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[i_disc], label=disc_name + " Source")[0])
-            plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[i_disc], alpha=0.2)
-            artists.append(plt.plot(x, mean_target_reward, linestyle='dashed', color=colors[i_disc], label=disc_name + " Target")[0])
-            plt.fill_between(x, mean_target_reward - std_target_reward / 2., mean_target_reward + std_target_reward / 2., color=colors[i_disc], alpha=0.2)
+            artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[disc_name], label=disc_name + " Source")[0])
+            plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[disc_name], alpha=0.2)
+            artists.append(plt.plot(x, mean_target_reward, linestyle='dashed', color=colors[disc_name], label=disc_name + " Target")[0])
+            plt.fill_between(x, mean_target_reward - std_target_reward / 2., mean_target_reward + std_target_reward / 2., color=colors[disc_name], alpha=0.2)
 
     plt.xlabel("Timesteps (in millions)")
     plt.ylabel("Reward")
@@ -244,7 +237,7 @@ def main_sweep_comparision(original_procgen=False, vc=True):
         fig.savefig("figures/vc-training.png", bbox_inches="tight")
     else:
         fig.savefig("figures/procgen-training.png", bbox_inches="tight")
-    
+
     plt.close()
 
 if __name__ == "__main__":
