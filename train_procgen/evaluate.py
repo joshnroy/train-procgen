@@ -17,6 +17,8 @@ import sys
 import gym
 import gym_cartpole_visual
 import numpy as np
+from tqdm import tqdm
+import torch
 
 from pyvirtualdisplay import Display
 display = Display(visible=0, size=(100, 100), backend="xvfb")
@@ -25,10 +27,51 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from scipy.stats import gaussian_kde
+import matplotlib.style as style
+from matplotlib import rcParams
+import brewer2mpl
+from pathlib import Path
 
 import random
 random.seed(0)
 np.random.seed(0)
+
+style.use("seaborn-darkgrid")
+rcParams['lines.linewidth'] = 1
+rcParams['font.size'] = 12
+
+def encircle(x,y, ax=None, **kw):
+    if not ax: ax=plt.gca()
+    p = np.c_[x,y]
+    hull = ConvexHull(p)
+    poly = plt.Polygon(p[hull.vertices,:], **kw)
+    ax.add_patch(poly)
+
+def density_estimation(m1, m2):
+    xmin = -3.
+    ymin = -3.
+    xmax = 3.
+    ymax = 3.
+    X, Y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]                                                     
+    positions = np.vstack([X.ravel(), Y.ravel()])                                                       
+    values = np.vstack([m1, m2])                                                                        
+    kernel = gaussian_kde(values)                                                                 
+    Z = np.reshape(kernel(positions).T, X.shape)
+    return X, Y, Z
+
+def preprocess_fn(model, data, transform):
+    # with torch.no_grad():
+    data = torch.stack([transform(x) for x in data])
+    # print(data.min(), data.max(), data.shape)
+    # sys.exit()
+    out = model.netG_A(data)
+    # print(out.min(), out.max())
+    out = ((out.permute(0, 2, 3, 1) + 1.) / 2. * 255.).detach().cpu().numpy()
+    # print(out.min(), out.max())
+    out = out.astype(np.uint8)
+    return out
 
 
 def main():
@@ -43,6 +86,10 @@ def main():
     clip_range = .2
     use_vf_clipping = True
     dist_mode = "easy"
+    
+    visualization = False
+    save_images = False
+    vrgoggles = True
 
     # if int(os.environ["SGE_TASK_ID"]) not in [8, 10, 11, 12, 13, 14, 15, 16]:
     #     sys.exit()
@@ -53,11 +100,11 @@ def main():
         i_env = indicator // len(target_levels)
     else:
         parser = argparse.ArgumentParser()
-        parser.add_argument("--i_trial", help="trial number", required=True)
-        # parser.add_argument("--i_env", help="env number", required=True)
+        parser.add_argument("--i_trial", help="trial number", required=False, default=0)
+        parser.add_argument("--i_env", help="env number", required=False, default=0)
         args = parser.parse_args()
         i_trial = int(args.i_trial)
-        # i_env = int(args.i_env)
+        i_env = int(args.i_env)
 
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
@@ -66,9 +113,9 @@ def main():
     target_levels = [7354, 9570, 6317, 6187, 8430]
     target_level = target_levels[i_trial]
 
-    env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
+    # env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
-    env_name = 'visual-cartpole'
+    env_name = "visual-cartpole"
     # env_name = env_names[i_env]
     num_frames = 1
 
@@ -81,13 +128,12 @@ def main():
     else:
         timesteps_per_proc = 200_000_000
         save_interval=100
+    
 
 
-    num_levels = 3
-    num_test_levels = 0
-    num_iterations = 200
-
-    disc_coeff = 10.0
+    num_levels = 1
+    num_test_levels = 1
+    num_iterations = 100
 
     test_worker_interval = 0
 
@@ -104,17 +150,52 @@ def main():
     log_comm = comm.Split(1 if is_test_worker else 0, 0)
     format_strs = ['csv', 'stdout', 'tensorboard'] if log_comm.Get_rank() == 0 else []
 
-    load_path = "vc_cannonical_easy/visual-cartpole_disc_coeff_10.0_num_levels_3_nsteps_256_num_frames_1_num_test_levels_0_rmsprop_wgan_same_trainer_trial_0/checkpoints/00300"
+    # load_path = "vc_easy/visual-cartpole_disc_coeff_10.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_0/checkpoints/00390"
+    load_path = "train-procgen/vc_easy/visual-cartpole_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_" + str(i_trial) + "/checkpoints/00390"
+    disc_coeff = float(load_path.split("_")[4])
+    # load_path = "train-procgen/procgen_wconf_easy_3/" + env_name + "_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_0/checkpoints/01500"
+    # disc_coeff = float(load_path.split("_")[6])
 
+    preprocessor = None
+    if vrgoggles:
+        sys.path.insert(1, 'cyclegan')
+        from models import create_model
+        from options.test_options import TestOptions
+        import torchvision.transforms as transforms
+        opt_parser = TestOptions()
+        opt = opt_parser.parse()
+        opt.name = "visual-cartpole_trial_" + str(i_trial) + "_cyclegan"
+        # opt.direction = "BtoA"
+        opt.model = "cycle_gan"
+        opt.num_threads = 0
+        opt.batch_size=num_envs
+        opt.serial_batches = True
+        opt.no_flip = True
+        opt.display_id = -1
+        opt.checkpoints_dir = "./cyclegan/checkpoints/"
+        opt.dataroot = "./cyclegan/datasets/vc_trial_" + str(i_trial)
+        opt.no_dropout = True
+        opt.isTrain = False
+
+        opt_parser.print_options(opt)
+
+        model = create_model(opt)
+        model.setup(opt)
+
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+        preprocessor = lambda x: preprocess_fn(model, x, transform)
+
+    print(env_name, i_trial)
     with tf.Graph().as_default():
         print("Testing on Source")
 
         if env_name == "visual-cartpole":
-            venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_levels, start_level=1543)
+            venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_levels, start_level=source_level)
             venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
             venv.action_space = gym.spaces.Discrete(2)
         else:
-            venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=1543, distribution_mode=dist_mode)
+            venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=source_level, distribution_mode=dist_mode)
             venv = VecExtractDictObs(venv, "rgb")
 
 
@@ -135,7 +216,7 @@ def main():
 
         conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
 
-        _, source_latents, _, source_labels = ppo2.evaluate(
+        source_obs, source_latents, source_rewards, source_labels = ppo2.evaluate(
             env=venv,
             network=conv_fn,
             total_timesteps=timesteps_per_proc,
@@ -190,7 +271,7 @@ def main():
 
         conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
 
-        _, target_latents, _, _ = ppo2.evaluate(
+        target_obs, target_latents, target_rewards, _ = ppo2.evaluate(
             env=venv,
             network=conv_fn,
             total_timesteps=timesteps_per_proc,
@@ -214,37 +295,99 @@ def main():
             num_levels=num_levels,
             disc_coeff=disc_coeff,
             load_path=load_path,
-            num_iterations = num_iterations // num_levels
+            num_iterations = num_iterations,
+            preprocessor = preprocessor
         )
 
 
-    fig, (ax1) = plt.subplots(1, figsize=(10, 10))
+    fig, (ax1) = plt.subplots(1, figsize=(5, 5))
+
+    if visualization:
+        source_latents = pd.DataFrame(source_latents)
+        target_latents = pd.DataFrame(target_latents)
+        all_latents = pd.concat([source_latents, target_latents])
+
+        source_latents = (source_latents - all_latents.min()) / (all_latents.max() - all_latents.min())
+        target_latents = (target_latents - all_latents.min()) / (all_latents.max() - all_latents.min())
+        all_latents = pd.concat([source_latents, target_latents])
+
+        print("ABOUT TO TRANSFORM LATENTS")
+        pca = PCA(n_components=50)
+        tsne = TSNE(n_components=2)
+        all_latents_transformed = pca.fit_transform(all_latents.to_numpy())
+        print("PCA DONE")
+        all_latents_transformed = tsne.fit_transform(all_latents_transformed)
+        source_latents = pd.DataFrame(all_latents_transformed[:len(source_latents)])
+        target_latents = pd.DataFrame(all_latents_transformed[len(source_latents):])
+
+        # source_latents["Environment"] = pd.Series(["source " + str(x) for x in source_labels])
+        # target_latents["Environment"] = pd.Series(["target" for _ in range(len(target_latents))])
+        # all_latents = pd.concat([source_latents, target_latents])
+        # all_latents.columns = ["Component 1", "Component 2", "Environment"]
 
 
-    source_latents = pd.DataFrame(source_latents)
-    target_latents = pd.DataFrame(target_latents)
-    all_latents = pd.concat([source_latents, target_latents])
+        # sns.scatterplot(x="Component 1", y="Component 2", hue="Environment", data=all_latents, alpha=0.1, marker=False, ax=ax1)
+        source_latents_smol = source_latents[:500]
+        target_latents_smol = target_latents[:500]
 
-    source_latents = (source_latents - all_latents.min()) / (all_latents.max() - all_latents.min())
-    target_latents = (target_latents - all_latents.min()) / (all_latents.max() - all_latents.min())
-    all_latents = pd.concat([source_latents, target_latents])
+        artists = []
 
-    pca = PCA(n_components=2)
-    pca.fit(all_latents.to_numpy())
-    source_latents = pd.DataFrame(pca.transform(source_latents.to_numpy()))
-    target_latents = pd.DataFrame(pca.transform(target_latents.to_numpy()))
+        print("ABOUT TO ESTIMATE DENSITY")
+        target_x, target_y, target_z = density_estimation(target_latents[0], target_latents[1])
+        source_x, source_y, source_z = density_estimation(source_latents[0], source_latents[1])
 
-    source_latents["Environment"] = pd.Series(["source " + str(x) for x in source_labels])
-    target_latents["Environment"] = pd.Series(["target" for _ in range(len(target_latents))])
-    all_latents = pd.concat([source_latents, target_latents])
-    all_latents.columns = ["Component 1", "Component 2", "Environment"]
+        print("PLOTTING")
+
+        step = 0.1
+        m = np.amax(target_z)
+        source_levels = np.arange(0.0, m, step)
+        plt.contourf(target_x, target_y, target_z, 5, cmap='Purples', alpha=1.)
+
+        m = np.amax(source_z)
+        target_levels = np.arange(0.0, m, step)
+        plt.contourf(source_x, source_y, source_z, 5, cmap='Greys', alpha=0.5)
+
+        plt.contour(target_x, target_y, target_z, 5, colors="Purple")
+        plt.contour(source_x, source_y, source_z, 5, colors="Grey")
+
+        # artists.append(plt.scatter(source_latents_smol[0], source_latents_smol[1], color="grey", alpha=0.5, marker=".", label="Source"))
+        # artists.append(plt.scatter(target_latents_smol[0], target_latents_smol[1], color="purple", alpha=0.5, marker=".", label="Target"))
+        # plt.legend(artists)
+
+        proxy_source = plt.Rectangle((0, 0), 1, 1, fc='Grey')
+        proxy_target = plt.Rectangle((0, 0), 1, 1, fc='Purple')
+        plt.legend([proxy_source, proxy_target], ["Source", "Target"])
+
+        plt.title("PPO Features")
+        plt.xlabel("Component 1")
+        plt.ylabel("Component 2")
+        plt.xlim(-3., 3.)
+        plt.ylim(-3, 3.)
+        plt.savefig("scatter.png", bbox_inches="tight")
+
+    if save_images:
+        source_obs = source_obs[:100_000]
+        target_obs = target_obs[:100_000]
+        print(source_obs.shape, target_obs.shape)
+
+        dir_name = "cyclegan/datasets/" + env_name + "_trial_" + str(i_trial) + "/"
+        # dir_name = "/home/josh/mnt/cyclegan_datasets/" + env_name + "_trial_" + str(i_trial) + "/"
+        dir_name_a = dir_name + "trainA/"
+        dir_name_b = dir_name + "trainB/"
+
+        Path(dir_name_a).mkdir(parents=True, exist_ok=True)
+        Path(dir_name_b).mkdir(parents=True, exist_ok=True)
 
 
-    sns.scatterplot(x="Component 1", y="Component 2", hue="Environment", data=all_latents, alpha=0.1, marker=False, ax=ax1)
-    plt.savefig("scatter.png")
-
-
-
+        print("print saving images: source, latent", source_obs.shape, target_obs.shape)
+        for i, s_o in tqdm(enumerate(source_obs), total=len(source_obs)):
+            plt.imsave(dir_name_a + "img" + str(i) + ".png", s_o)
+        for i, t_o in tqdm(enumerate(target_obs), total=len(target_obs)):
+            plt.imsave(dir_name_b + "img" + str(i) + ".png", t_o)
+    if vrgoggles: # Evaluate VRGoggles
+        with open("vrgoggles_out_" + str(env_name) + ".txt", 'a') as outfile:
+            outfile.write(str(i_trial) + ", " + str(np.mean(source_rewards)) + ", " + str(np.mean(target_rewards)) + "\n")
+        print("Source Reward", np.mean(source_rewards), "Target Reward", np.mean(target_rewards))
 
 if __name__ == '__main__':
     main()
