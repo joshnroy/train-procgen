@@ -71,6 +71,7 @@ def preprocess_fn(model, data, transform):
     # print(out.min(), out.max())
     out = ((out.permute(0, 2, 3, 1) + 1.) / 2. * 255.).detach().cpu().numpy()
     # print(out.min(), out.max())
+    # sys.exit()
     out = out.astype(np.uint8)
     return out
 
@@ -102,21 +103,23 @@ def main():
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i_trial", help="trial number", required=False, default=0)
-        parser.add_argument("--i_env", help="env number", required=False, default=0)
+        parser.add_argument("--env", help="env name", required=False, default=0)
         args = parser.parse_args()
         i_trial = int(args.i_trial)
-        i_env = int(args.i_env)
+        env_name = args.env
 
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
     source_level = source_levels[i_trial]
+    source_level = 0
 
     target_levels = [7354, 9570, 6317, 6187, 8430]
     target_level = target_levels[i_trial]
 
     # env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
-    env_name = "visual-cartpole"
+    # env_name = "visual-cartpole"
+    # env_name = "visual-cartpole"
     # env_name = env_names[i_env]
     num_frames = 1
 
@@ -133,7 +136,7 @@ def main():
 
     num_levels = 1
     num_test_levels = 1
-    num_iterations = 2
+    num_iterations = 10
 
     test_worker_interval = 0
 
@@ -150,10 +153,12 @@ def main():
     log_comm = comm.Split(1 if is_test_worker else 0, 0)
     format_strs = ['csv', 'stdout', 'tensorboard'] if log_comm.Get_rank() == 0 else []
 
-    load_path = "train-procgen/vc_easy/visual-cartpole_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_" + str(i_trial) + "/checkpoints/00390"
-    disc_coeff = float(load_path.split("_")[4])
-    # load_path = "train-procgen/procgen_wconf_easy_3/" + env_name + "_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_0/checkpoints/01500"
-    # disc_coeff = float(load_path.split("_")[6])
+    if env_name == "visual-cartpole":
+        load_path = "train-procgen/vc_easy/visual-cartpole_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_" + str(i_trial) + "/checkpoints/00390"
+        disc_coeff = float(load_path.split("_")[4])
+    else:
+        load_path = "train-procgen/procgen_wconf_easy_3/" + env_name + "_disc_coeff_0.0_num_levels_1_nsteps_256_num_frames_1_num_test_levels_1_trial_" + str(i_trial) + "/checkpoints/01500"
+        disc_coeff = float(load_path.split("_")[6])
 
     preprocessor = None
     if vrgoggles:
@@ -163,7 +168,7 @@ def main():
         import torchvision.transforms as transforms
         opt_parser = TestOptions()
         opt = opt_parser.parse()
-        opt.name = "visual-cartpole_trial_" + str(i_trial) + "_cyclegan"
+        opt.name = env_name + "_trial_" + str(i_trial) + "_cyclegan"
         # opt.direction = "BtoA"
         opt.model = "cycle_gan"
         opt.num_threads = 0
@@ -180,6 +185,7 @@ def main():
 
         model = create_model(opt)
         model.setup(opt)
+        model.eval()
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
@@ -215,7 +221,7 @@ def main():
 
         conv_fn = lambda x: build_impala_cnn(x, depths=[16,32,32], emb_size=256)
 
-        source_obs, source_latents, source_rewards, source_labels = ppo2.evaluate(
+        source_obs, source_latents, source_rewards, _ = ppo2.evaluate(
             env=venv,
             network=conv_fn,
             total_timesteps=timesteps_per_proc,
@@ -386,9 +392,10 @@ def main():
         for i, t_o in tqdm(enumerate(target_obs), total=len(target_obs)):
             plt.imsave(dir_name_b + "img" + str(i) + ".png", t_o)
     if vrgoggles: # Evaluate VRGoggles
-        with open("vrgoggles_out_" + str(env_name) + "_" + dist_mode + ".txt", 'a') as outfile:
+        with open("vrgoggles/vrgoggles_out_" + str(env_name) + "_" + dist_mode + ".txt", 'a') as outfile:
             outfile.write(str(i_trial) + ", " + str(np.mean(source_rewards)) + ", " + str(np.mean(target_rewards)) + "\n")
         print("Source Reward", np.mean(source_rewards), "Target Reward", np.mean(target_rewards))
+        print(source_rewards)
 
 if __name__ == '__main__':
     main()

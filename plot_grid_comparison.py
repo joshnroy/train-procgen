@@ -164,7 +164,7 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
         try:
             vr_data_raw = pd.read_csv("../vrgoggles/vrgoggles_out_" + str(env) + "_" + dist_mode + ".csv")
             vr_data = pd.DataFrame()
-            plot_len = int(0.05 * len(data))
+            plot_len = int(0.1 * len(data))
             for _, row in vr_data_raw.iterrows():
                 smol_vr_data = pd.DataFrame()
                 smol_vr_data["eprewmean"] = pd.Series([row[1]][0] for _ in range(plot_len))
@@ -211,8 +211,10 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
             big_df = big_df.append(openai_data)
 
         if env != "visual-cartpole":
-            big_df["Normalized Source Reward"] = (big_df["Source Reward"] - min_max_dict[env][0]) / (min_max_dict[env][1] - min_max_dict[env][0])
-            big_df["Normalized Target  Reward"] = (big_df["Target Reward"] - min_max_dict[env][0]) / (min_max_dict[env][1] - min_max_dict[env][0])
+            big_df["Normalized Source Reward"] = ((big_df["Source Reward"] - min_max_dict[env][0]) / (min_max_dict[env][1] - min_max_dict[env][0])).clip(0.)
+            big_df["Normalized Target Reward"] = ((big_df["Target Reward"] - min_max_dict[env][0]) / (min_max_dict[env][1] - min_max_dict[env][0])).clip(0.)
+            # assert (big_df["Normalized Source Reward"] >= 0.).all()
+            # assert (big_df["Normalized Target Reward"] >= 0.).all()
             overall_df = overall_df.append(big_df, ignore_index=True)
 
     if not vc:
@@ -225,9 +227,9 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
             smol_data = overall_df[overall_df["disc_name"]==disc_name]
             grouped = smol_data.groupby(["trial_num", "misc/total_timesteps"]).mean()
             mean_source_reward = (grouped["Normalized Source Reward"].mean(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
-            mean_target_reward = (grouped["Normalized Target  Reward"].mean(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
+            mean_target_reward = (grouped["Normalized Target Reward"].mean(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             std_source_reward = (grouped["Normalized Source Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
-            std_target_reward = (grouped["Normalized Target  Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
+            std_target_reward = (grouped["Normalized Target Reward"].std(level="misc/total_timesteps")).rolling(window=50).mean().to_numpy()
             x = np.arange(len(mean_source_reward)) * (num_timesteps / len(mean_source_reward))
             artists.append(plt.plot(x, mean_source_reward, linestyle='solid', color=colors[disc_name], label=disc_name + " Source")[0])
             plt.fill_between(x, mean_source_reward - std_source_reward / 2., mean_source_reward + std_source_reward / 2., color=colors[disc_name], alpha=0.2)
