@@ -33,10 +33,7 @@ def main():
     ppo_epochs = 3
     clip_range = .2
     use_vf_clipping = True
-    dist_mode = "easy"
-
-    # if int(os.environ["SGE_TASK_ID"]) not in [8, 10, 11, 12, 13, 14, 15, 16]:
-    #     sys.exit()
+    dist_mode = "hard"
 
     if "SGE_TASK_ID" in os.environ:
         indicator = int(os.environ["SGE_TASK_ID"]) - 1
@@ -51,16 +48,21 @@ def main():
         # i_env = int(args.i_env)
 
 
-    target_levels = [1543, 7991, 3671, 2336, 6420]
+    source_levels = [1543, 7991, 3671, 2336, 6420]
 
-
-    target_level = target_levels[i_trial]
-
+    target_levels = [7354, 9570, 6317, 6187, 8430]
     env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
-    env_name = 'visual-cartpole'
-    # env_name = env_names[i_env]
+    i_trial = indicator % len(target_levels)
+    i_trial_str = str(i_trial)
+
+    source_level = source_levels[i_trial]
+    target_level = target_levels[i_trial]
+
+    env_name = env_names[i_env]
     num_frames = 1
+
+    disc_coeff = 10.
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
@@ -76,10 +78,8 @@ def main():
     num_levels = 1
     num_test_levels = 1
 
-    disc_coeff = 10.
-    LOG_DIR = "vc_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    LOG_DIR += "_rmsprop_wgan_same_trainer"
-    LOG_DIR += "_trial_" + str(i_trial) + "_biggercritic"
+    LOG_DIR = "/data/people/jroy1/procgen_wconf_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR += "_trial_" + i_trial_str
 
     test_worker_interval = 0
 
@@ -100,11 +100,11 @@ def main():
     logger.info("creating environment")
 
     if env_name == "visual-cartpole":
-        venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_levels, start_level=0)
+        venv = gym.vector.make('cartpole-visual-v1', num_envs=num_envs, num_levels=num_levels, start_level=source_level)
         venv.observation_space = gym.spaces.Box(low=0, high=255, shape=(64, 64, 3), dtype=np.uint8)
         venv.action_space = gym.spaces.Discrete(2)
     else:
-        venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=0, distribution_mode=dist_mode)
+        venv = ProcgenEnv(num_envs=num_envs, env_name=env_name, num_levels=num_levels, start_level=source_level, distribution_mode=dist_mode)
         venv = VecExtractDictObs(venv, "rgb")
 
 
