@@ -32,7 +32,18 @@ def main():
     use_vf_clipping = True
     dist_mode = "hard"
 
-    indicator = int(os.environ["SGE_TASK_ID"]) - 1
+    if "SGE_TASK_ID" in os.environ:
+        indicator = int(os.environ["SGE_TASK_ID"]) - 1
+        i_trial = indicator % len(target_levels)
+        i_env = indicator // len(target_levels)
+    else:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--i_trial", help="trial number", required=True)
+        parser.add_argument("--i_env", help="env number", required=True)
+        args = parser.parse_args()
+        i_trial = args.i_trial
+        i_env = args.i_env
+
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
 
@@ -40,15 +51,12 @@ def main():
     env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
     i_trial = indicator % len(target_levels)
-    if i_trial <= 2:
-        sys.exit()
     i_trial_str = str(i_trial)
 
     source_level = source_levels[i_trial]
     target_level = target_levels[i_trial]
 
 
-    i_env = indicator // len(target_levels)
     env_name = env_names[i_env]
 
     if env_name in ["maze", "plunder", "leaper", "miner"]:
@@ -71,17 +79,9 @@ def main():
     num_levels = 1
     num_test_levels = 1
 
-    # LOG_DIR = "/home/jroy1/procgen_combined_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_adaptive_sigmoid_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_randomfeatures_" + dist_mode + "/" + env_name + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_combined_testing_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_combined_testing_flipped_disc_coeff_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR = "/home/jroy1/procgen_vanilla" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR = "/data/people/jroy1/procgen_wconf_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
-    # LOG_DIR += "_robustdr"
-    # LOG_DIR += "_rmsprop_wgan_same_trainer"
-    # LOG_DIR += "_disc10"
     LOG_DIR += "_trial_" + i_trial_str
+    disc_coeff = 10.
 
     test_worker_interval = 0
 
