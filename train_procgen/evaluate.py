@@ -105,10 +105,10 @@ def main(dist_mode="easy"):
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i_trial", help="trial number", required=False, default=0)
-        parser.add_argument("--env", help="env name", required=False, default=0)
+        parser.add_argument("--env_name", help="env name", required=False, default=0)
         args = parser.parse_args()
         i_trial = int(args.i_trial)
-        env_name = args.env
+        env_name = args.env_name
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
     source_level = source_levels[i_trial]
@@ -118,9 +118,6 @@ def main(dist_mode="easy"):
     target_levels = [7354, 9570, 6317, 6187, 8430]
     target_level = target_levels[i_trial]
 
-    # env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
-
-    # env_name = env_names[i_env]
     num_frames = 1
 
     if env_name == "visual-cartpole":

@@ -44,34 +44,35 @@ def main():
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i_trial", help="trial number", required=True)
+        parser.add_argument("--env", help="env name", required=True)
         # parser.add_argument("--i_env", help="env number", required=True)
         args = parser.parse_args()
         i_trial = int(args.i_trial)
         # i_env = int(args.i_env)
+        env_name = args.env_name
 
-    env_names = [
-        "bigfish",
-        "bossfight",
-        "caveflyer",
-        "chaser",
-        "climber",
-        "coinrun",
-        "dodgeball",
-        "fruitbot",
-        "heist",
-        "jumper",
-        "leaper",
-        "maze",
-        "miner",
-        "ninja",
-        "plunder",
-        "starpilot",
-    ]
+    # env_names = [
+    #     "bigfish",
+    #     "bossfight",
+    #     "caveflyer",
+    #     "chaser",
+    #     "climber",
+    #     "coinrun",
+    #     "dodgeball",
+    #     "fruitbot",
+    #     "heist",
+    #     "jumper",
+    #     "leaper",
+    #     "maze",
+    #     "miner",
+    #     "ninja",
+    #     "plunder",
+    #     "starpilot",
+    # ]
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
 
     target_levels = [7354, 9570, 6317, 6187, 8430]
-    env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
     i_trial = indicator % len(target_levels)
     i_trial_str = str(i_trial)
@@ -79,10 +80,9 @@ def main():
     source_level = source_levels[i_trial]
     target_level = target_levels[i_trial]
 
-    env_name = env_names[i_env]
     num_frames = 1
 
-    disc_coeff = 10.
+    disc_coeff = 10.0
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
