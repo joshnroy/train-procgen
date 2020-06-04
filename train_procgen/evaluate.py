@@ -437,7 +437,7 @@ def main(dist_mode="easy"):
         print(source_obs.shape, target_obs.shape)
 
         dir_name = "cyclegan/datasets/" + env_name + "_trial_" + str(i_trial) + "/"
-        # dir_name = "/home/josh/mnt/cyclegan_datasets/" + env_name + "_trial_" + str(i_trial) + "/"
+        # dir_name = "/home/homedir/mnt/cyclegan_datasets/" + env_name + "_trial_" + str(i_trial) + "/"
         dir_name_a = dir_name + "trainA/"
         dir_name_b = dir_name + "trainB/"
 

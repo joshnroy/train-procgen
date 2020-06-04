@@ -238,9 +238,6 @@ def main_sweep_comparision(original_procgen=False, vc=True, hard=False):
                 smol_vr_data["trial_num"] = pd.Series(
                     [int(row[0]) for _ in range(plot_len)]
                 )
-                # smol_vr_data["misc/total_timesteps"] = data[
-                #     "misc/total_timesteps"
-                # ].to_numpy()[len(data) - plot_len :]
                 smol_vr_data["misc/total_timesteps"] = np.arange(plot_len) * (
                     num_timesteps * 1e6 / plot_len
                 )

@@ -4,6 +4,7 @@ import numpy as np
 from glob import glob
 import matplotlib.pyplot as plt
 import matplotlib
+
 matplotlib.use("TkAgg")
 import os
 from tqdm import tqdm
@@ -11,15 +12,16 @@ import sys
 
 sns.set(style="darkgrid")
 
+
 def main():
     AVG_LEN = 10
     my_returns_train = {"10": [], "5": [], "3": [], "1": []}
     ppo_returns_train = {"10": [], "5": [], "3": [], "1": []}
     my_returns_test = {"10": [], "5": [], "3": [], "1": []}
     ppo_returns_test = {"10": [], "5": [], "3": [], "1": []}
-    # for f in tqdm(glob("/home/josh/w_disc_againeasy/*/progress.csv")):
-    for f in tqdm(glob("/home/josh/w_disc_again_vc_long_easy/*/progress.csv")):
-    # for f in tqdm(glob("/home/josh/w_disc_again_vc_easy/*/progress.csv")):
+    # for f in tqdm(glob("/home/homedir/w_disc_againeasy/*/progress.csv")):
+    for f in tqdm(glob("/home/homedir/w_disc_again_vc_long_easy/*/progress.csv")):
+        # for f in tqdm(glob("/home/homedir/w_disc_again_vc_easy/*/progress.csv")):
         if os.stat(f).st_size == 0:
             continue
         disc_coeff = f.split("/")[4].split("_")[3]
@@ -37,10 +39,16 @@ def main():
             name = str.split(f, "/")[4]
 
             if AVG_LEN > 1:
-                data["eprewmean"] = data["eprewmean"].rolling(AVG_LEN, center=True).mean()
-                data["eval_eprewmean"] = data["eval_eprewmean"].rolling(AVG_LEN, center=True).mean()
+                data["eprewmean"] = (
+                    data["eprewmean"].rolling(AVG_LEN, center=True).mean()
+                )
+                data["eval_eprewmean"] = (
+                    data["eval_eprewmean"].rolling(AVG_LEN, center=True).mean()
+                )
 
-            training_list.append(data[["eprewmean", "eval_eprewmean", "misc/total_timesteps"]])
+            training_list.append(
+                data[["eprewmean", "eval_eprewmean", "misc/total_timesteps"]]
+            )
 
         except Exception as e:
             print(f, "FAILED with ", e)
@@ -50,15 +58,35 @@ def main():
         if len(my_returns_train[num_train_levels]) == 0:
             continue
         my_returns_train_level = pd.concat(my_returns_train[num_train_levels], axis=0)
-        my_returns_train_level.columns = ["W Domain Confusion Train", "W Domain Confusion Test", "Environment Steps (Million)"]
+        my_returns_train_level.columns = [
+            "W Domain Confusion Train",
+            "W Domain Confusion Test",
+            "Environment Steps (Million)",
+        ]
         ppo_returns_train_level = pd.concat(ppo_returns_train[num_train_levels], axis=0)
-        ppo_returns_train_level.columns = ["PPO Train", "PPO Test", "Environment Steps (Million)"]
+        ppo_returns_train_level.columns = [
+            "PPO Train",
+            "PPO Test",
+            "Environment Steps (Million)",
+        ]
 
         finals = pd.concat([my_returns_train_level, ppo_returns_train_level], axis=0)
-        finals = pd.melt(finals, ["Environment Steps (Million)"], var_name="Legend", value_name="Reward")
+        finals = pd.melt(
+            finals,
+            ["Environment Steps (Million)"],
+            var_name="Legend",
+            value_name="Reward",
+        )
 
-        sns.lineplot(data=finals, hue="Legend", y="Reward", x="Environment Steps (Million)", ci="sd")
+        sns.lineplot(
+            data=finals,
+            hue="Legend",
+            y="Reward",
+            x="Environment Steps (Million)",
+            ci="sd",
+        )
         plt.show()
+
 
 if __name__ == "__main__":
     main()
