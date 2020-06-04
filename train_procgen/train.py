@@ -49,10 +49,6 @@ def main():
         i_trial = int(args.i_trial)
         # i_env = int(args.i_env)
 
-    target_levels = [1543, 7991, 3671, 2336, 6420]
-
-    target_level = target_levels[i_trial]
-
     env_names = [
         "bigfish",
         "bossfight",
@@ -72,9 +68,21 @@ def main():
         "starpilot",
     ]
 
-    env_name = "visual-cartpole"
-    # env_name = env_names[i_env]
+    source_levels = [1543, 7991, 3671, 2336, 6420]
+
+    target_levels = [7354, 9570, 6317, 6187, 8430]
+    env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
+
+    i_trial = indicator % len(target_levels)
+    i_trial_str = str(i_trial)
+
+    source_level = source_levels[i_trial]
+    target_level = target_levels[i_trial]
+
+    env_name = env_names[i_env]
     num_frames = 1
+
+    disc_coeff = 10.
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
@@ -89,9 +97,8 @@ def main():
     num_levels = 1
     num_test_levels = 1
 
-    disc_coeff = 10.0
     LOG_DIR = (
-        "vc_"
+        "procgen_"
         + dist_mode
         + "/"
         + env_name
@@ -106,8 +113,7 @@ def main():
         + "_num_test_levels_"
         + str(num_test_levels)
     )
-    LOG_DIR += "_rmsprop_wgan_same_trainer"
-    LOG_DIR += "_trial_" + str(i_trial) + "_biggercritic"
+    LOG_DIR += "_trial_" + str(i_trial)
 
     test_worker_interval = 0
 
