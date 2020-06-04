@@ -7,11 +7,15 @@ setup(
         'numpy',
         'tqdm',
         'gym==0.15.4',
-        'https://github.com/joshnroy/procgen/archive/1.0.zip', # josh's visual procgen
         'tensorflow-gpu==1.15.0',
-        'https://github.com/joshnroy/baselines/archive/0.1.zip', # josh's baselines
         'mpi4py==3.0.3',
-        'pytest'
-    ]
+        'pytest',
+        'procgen',
+        'baselines',
+    ],
+    dependency_links = [
+        'git@github.com:joshnroy/procgen.git@1.0#egg=procgen', # visual procgen
+        'git@github.com:joshnroy/baselines.git@0.1#egg=baselines', # baselines
+    ],
     version='0.0.2',
 )

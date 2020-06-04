@@ -15,9 +15,12 @@ import argparse
 import os
 import sys
 import gym
-# import gym_cartpole_visual
+import gym_cartpole_visual
 import numpy as np
 
+from pyvirtualdisplay import Display
+display = Display(visible=0, size=(100, 100), backend="xvfb")
+display.start()
 
 def main():
     num_envs = 64
@@ -39,10 +42,10 @@ def main():
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument("--i_trial", help="trial number", required=True)
-        parser.add_argument("--i_env", help="env number", required=True)
+        # parser.add_argument("--i_env", help="env number", required=True)
         args = parser.parse_args()
-        i_trial = args.i_trial
-        i_env = args.i_env
+        i_trial = int(args.i_trial)
+        # i_env = int(args.i_env)
 
 
     source_levels = [1543, 7991, 3671, 2336, 6420]
@@ -56,18 +59,14 @@ def main():
     source_level = source_levels[i_trial]
     target_level = target_levels[i_trial]
 
-
     env_name = env_names[i_env]
-
-    if env_name in ["maze", "plunder", "leaper", "miner"]:
-        sys.exit()
     num_frames = 1
 
     disc_coeff = 10.
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
-        save_interval=10
+        save_interval=30
     elif dist_mode == "easy":
         timesteps_per_proc = 25_000_000
         save_interval=100
@@ -81,7 +80,6 @@ def main():
 
     LOG_DIR = "/data/people/jroy1/procgen_wconf_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_trial_" + i_trial_str
-    disc_coeff = 10.
 
     test_worker_interval = 0
 
@@ -138,7 +136,7 @@ def main():
     logger.info("creating tf session")
     # setup_mpi_gpus()
     config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = 0.9
+    config.gpu_options.per_process_gpu_memory_fraction = 0.85
     config.gpu_options.allow_growth = True #pylint: disable=E1101
     sess = tf.Session(config=config)
     sess.__enter__()
