@@ -30,7 +30,11 @@ def main():
     ppo_epochs = 3
     clip_range = .2
     use_vf_clipping = True
-    dist_mode = "hard"
+    dist_mode = "easy"
+
+    source_levels = [1543, 7991, 3671, 2336, 6420]
+
+    target_levels = [7354, 9570, 6317, 6187, 8430]
 
     if "SGE_TASK_ID" in os.environ:
         indicator = int(os.environ["SGE_TASK_ID"]) - 1
@@ -45,9 +49,6 @@ def main():
         i_env = args.i_env
 
 
-    source_levels = [1543, 7991, 3671, 2336, 6420]
-
-    target_levels = [7354, 9570, 6317, 6187, 8430]
     env_names = ["bigfish", "bossfight", "caveflyer", "chaser", "climber", "coinrun", "dodgeball", "fruitbot", "heist", "jumper", "leaper", "maze", "miner", "ninja", "plunder", "starpilot"]
 
     i_trial = indicator % len(target_levels)
@@ -59,11 +60,9 @@ def main():
 
     env_name = env_names[i_env]
 
-    if env_name in ["maze", "plunder", "leaper", "miner"]:
-        sys.exit()
     num_frames = 1
 
-    disc_coeff = 10.
+    disc_coeff = 0.
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
@@ -79,9 +78,8 @@ def main():
     num_levels = 1
     num_test_levels = 1
 
-    LOG_DIR = "/data/people/jroy1/procgen_wconf_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "/data/people/jroy1/aaai/procgen_vanilla_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_trial_" + i_trial_str
-    disc_coeff = 10.
 
     test_worker_interval = 0
 
