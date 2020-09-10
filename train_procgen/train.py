@@ -62,7 +62,7 @@ def main():
 
     num_frames = 1
 
-    disc_coeff = 0.
+    disc_coeff = 1.
 
     if env_name == "visual-cartpole":
         timesteps_per_proc = 1_000_000
@@ -78,7 +78,7 @@ def main():
     num_levels = 1
     num_test_levels = 1
 
-    LOG_DIR = "/data/people/jroy1/aaai/procgen_vanilla_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
+    LOG_DIR = "/data/people/jroy1/aaai/procgen_wappo_" + dist_mode + "/" + env_name + "_disc_coeff_" + str(disc_coeff) + "_num_levels_" + str(num_levels) + "_nsteps_" + str(nsteps) + "_num_frames_" + str(num_frames) + "_num_test_levels_" + str(num_test_levels)
     LOG_DIR += "_trial_" + i_trial_str
 
     test_worker_interval = 0
